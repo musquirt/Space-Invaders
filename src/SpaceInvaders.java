@@ -1,4 +1,3 @@
-
 import java.awt.*;
 import java.awt.event.KeyEvent;
 
@@ -6,20 +5,13 @@ import com.brackeen.javagamebook.graphics.*;
 import com.brackeen.javagamebook.input.*;
 import com.brackeen.javagamebook.test.GameCore;
 
-/**
-    InputManagerTest tests the InputManager with a simple
-    run-and-jump mechanism. The player moves and jumps using
-    the arrow keys and the space bar.
-    <p>Also, InputManagerTest demonstrates pausing a game
-    by not updating the game elements if the game is paused.
-*/
-public class InputManagerTest extends GameCore {
+public class SpaceInvaders extends GameCore {
 
     public static void main(String[] args) {
-        new InputManagerTest().run();
+        new SpaceInvaders().run();
     }
 
-    protected GameAction jump;
+    protected GameAction shoot;
     protected GameAction exit;
     protected GameAction moveLeft;
     protected GameAction moveRight;
@@ -34,27 +26,20 @@ public class InputManagerTest extends GameCore {
         Window window = screen.getFullScreenWindow();
         inputManager = new InputManager(window);
 
-        // use these lines for relative mouse mode
-        //inputManager.setRelativeMouseMode(true);
-        //inputManager.setCursor(InputManager.INVISIBLE_CURSOR);
-
         createGameActions();
-        createSprite();
+        loadBgImage();
+        createSprites();
         paused = false;
     }
 
 
-    /**
-        Tests whether the game is paused or not.
-    */
+    /* Tests whether the game is paused or not */
     public boolean isPaused() {
         return paused;
     }
 
 
-    /**
-        Sets the paused state.
-    */
+    /* Sets the paused state */
     public void setPaused(boolean p) {
         if (paused != p) {
             this.paused = p;
@@ -67,7 +52,7 @@ public class InputManagerTest extends GameCore {
         // check input that can happen whether paused or not
         checkSystemInput();
 
-        if (!isPaused()) {
+        if (isPaused() != true) {
             // check game input
             checkGameInput();
 
@@ -96,19 +81,18 @@ public class InputManagerTest extends GameCore {
         only when the game is not paused.
     */
     public void checkGameInput() {
-        float velocityX = 0;
-        if (moveLeft.isPressed()) {
-            velocityX-=Player.SPEED;
+        if (moveLeft.isPressed() && player.getX() > 0) {
+            player.moveLeft();
+        } else if (moveRight.isPressed() &&
+        			 player.getX() < (screen.getWidth() - player.getWidth())) {
+            player.moveRight();
+        } else {
+        	player.setVelocityX(0);
         }
-        if (moveRight.isPressed()) {
-            velocityX+=Player.SPEED;
-        }
-        player.setVelocityX(velocityX);
 
-        if (jump.isPressed() &&
-            player.getState() != Player.STATE_JUMPING)
+        if (shoot.isPressed() == true)
         {
-            player.jump();
+            player.shoot();
         }
     }
 
@@ -118,10 +102,7 @@ public class InputManagerTest extends GameCore {
         g.drawImage(bgImage, 0, 0, null);
 
         // draw sprite
-        g.drawImage(player.getImage(),
-            Math.round(player.getX()),
-            Math.round(player.getY()),
-            null);
+        player.draw(g);
     }
 
 
@@ -129,7 +110,7 @@ public class InputManagerTest extends GameCore {
         Creates GameActions and maps them to keys.
     */
     public void createGameActions() {
-        jump = new GameAction("jump",
+        shoot = new GameAction("shoot",
             GameAction.DETECT_INITAL_PRESS_ONLY);
         exit = new GameAction("exit",
             GameAction.DETECT_INITAL_PRESS_ONLY);
@@ -141,10 +122,8 @@ public class InputManagerTest extends GameCore {
         inputManager.mapToKey(exit, KeyEvent.VK_ESCAPE);
         inputManager.mapToKey(pause, KeyEvent.VK_P);
 
-        // jump with spacebar or mouse button
-        inputManager.mapToKey(jump, KeyEvent.VK_SPACE);
-        inputManager.mapToMouse(jump,
-            InputManager.MOUSE_BUTTON_1);
+        // shoot with spacebar or mouse button
+        inputManager.mapToKey(shoot, KeyEvent.VK_SPACE);
 
         // move with the arrow keys...
         inputManager.mapToKey(moveLeft, KeyEvent.VK_LEFT);
@@ -154,36 +133,32 @@ public class InputManagerTest extends GameCore {
         inputManager.mapToKey(moveLeft, KeyEvent.VK_A);
         inputManager.mapToKey(moveRight, KeyEvent.VK_D);
 
-        // use these lines to map player movement to the mouse
-        //inputManager.mapToMouse(moveLeft,
-        //  InputManager.MOUSE_MOVE_LEFT);
-        //inputManager.mapToMouse(moveRight,
-        //  InputManager.MOUSE_MOVE_RIGHT);
-
     }
-
-
-    /**
-        Load images and creates the Player sprite.
-    */
-    private void createSprite() {
-        // load images
-        bgImage = loadImage("../images/background.jpg");
-        Image player1 = loadImage("../images/player1.png");
-        Image player2 = loadImage("../images/player2.png");
-        Image player3 = loadImage("../images/player3.png");
+    
+   	private void loadBgImage() {
+   		bgImage = loadImage("../graphics/background.png");
+   	}
+   	
+   	private void createSprites() {
+    	createPlayerSprite();
+    	createEnemySprites();
+    	return;
+   	}
+   	
+   	private void createPlayerSprite() {
+   		// load image
+        Image shipImg = loadImage("../graphics/player.png");
 
         // create animation
         Animation anim = new Animation();
-        anim.addFrame(player1, 250);
-        anim.addFrame(player2, 150);
-        anim.addFrame(player1, 150);
-        anim.addFrame(player2, 150);
-        anim.addFrame(player3, 200);
-        anim.addFrame(player2, 150);
-
-        player = new Player(anim);
-        player.setFloorY(screen.getHeight() - player.getHeight());
-    }
+        anim.addFrame(shipImg, 1000); 
+   		player = new Player(anim, 0, screen.getHeight());
+   		return;
+   	}
+   	
+   	private void createEnemySprites() {
+   		
+   		return;
+   	}
 
 }

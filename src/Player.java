@@ -1,83 +1,79 @@
 import com.brackeen.javagamebook.graphics.*;
+import java.awt.*;
+import javax.swing.ImageIcon;
 
-/**
-    The Player extends the Sprite class to add states
-    (STATE_NORMAL or STATE_JUMPING) and gravity.
-*/
+/* The Player class extends the Sprite class */
 public class Player extends Sprite {
+	// high for debugging purposes
+	// .15 seems to be a good speed
+    private static final float Speed = .5f;
 
-    public static final int STATE_NORMAL = 0;
-    public static final int STATE_JUMPING = 1;
+    private int     floorY;
+    private int     screenMaxY;
+    private int     screenMinY;
+    private Bullet  theBullet = null;
 
-    public static final float SPEED = .3f;
-    public static final float GRAVITY = .002f;
-
-    private int floorY;
-    private int state;
-
-    public Player(Animation anim) {
+    public Player(Animation anim, int screenMin, int screenMax) {
         super(anim);
-        state = STATE_NORMAL;
+        screenMinY = screenMin;
+        screenMaxY = screenMax;
+        setFloorY(screenMax - getHeight() + screenMin);
+    }
+    
+    private void createBullet() {
+    	Image bulletImg = new 
+    				ImageIcon("../graphics/playerBullet.png").getImage();
+    	Animation anim = new Animation();
+    	anim.addFrame(bulletImg, 1000);
+    	theBullet = new Bullet(anim, getX()+getWidth()/2, getY()+getHeight(),
+    								true, screenMaxY, screenMinY);
+    	return;
     }
 
-
-    /**
-        Gets the state of the Player (either STATE_NORMAL or
-        STATE_JUMPING);
-    */
-    public int getState() {
-        return state;
-    }
-
-
-    /**
-        Sets the state of the Player (either STATE_NORMAL or
-        STATE_JUMPING);
-    */
-    public void setState(int state) {
-        this.state = state;
-    }
-
-
-    /**
-        Sets the location of "floor", where the Player starts
-        and lands after jumping.
-    */
+    /* Sets the location of "floor" */
     public void setFloorY(int floorY) {
         this.floorY = floorY;
         setY(floorY);
     }
-
-
-    /**
-        Causes the Player to jump
-    */
-    public void jump() {
-        setVelocityY(-1);
-        state = STATE_JUMPING;
+    
+    /* TODO: Get this working */
+    /* fires a bullet, if possible  */
+    public void shoot() {
+    	// one shot on the screen at a time
+    	if (theBullet == null || theBullet.getLive() != true) {
+    		theBullet = null;
+    		createBullet();
+    	}
+    }
+    
+    /* responsible for moving the player left */
+    public void moveLeft() {
+    	setVelocityX(-Player.Speed);
+    	return;
+    }
+    
+    /* responsible for moving the player right */
+    public void moveRight() {
+    	setVelocityX(Player.Speed);
+    	return;
+    }
+    
+    public void draw(Graphics2D g) {
+    	g.drawImage(getImage(),
+            Math.round(getX()),
+            Math.round(getY()),
+            null);
+    	if (theBullet != null) {
+    		theBullet.draw(g);
+        }
     }
 
-
-    /**
-        Updates the player's positon and animation. Also, sets the
-        Player's state to NORMAL if a jumping Player landed on
-        the floor.
-    */
+    /* Updates the player's positon and animation */
     public void update(long elapsedTime) {
-        // set vertical velocity (gravity effect)
-        if (getState() == STATE_JUMPING) {
-            setVelocityY(getVelocityY() + GRAVITY * elapsedTime);
-        }
-
         // move player
         super.update(elapsedTime);
-
-        // check if player landed on floor
-        if (getState() == STATE_JUMPING && getY() >= floorY) {
-            setVelocityY(0);
-            setY(floorY);
-            setState(STATE_NORMAL);
+        if (theBullet != null) {
+        	theBullet.update(elapsedTime);
         }
-
     }
 }
