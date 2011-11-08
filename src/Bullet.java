@@ -19,7 +19,7 @@ public class Bullet extends Sprite {
         if (dir == true) {
         	setVelocityY(-Bullet.Speed);
         } else {
-        	setVelocityY(-Bullet.Speed);
+        	setVelocityY(Bullet.Speed);
         }
     }
 
@@ -34,6 +34,11 @@ public class Bullet extends Sprite {
         }
         
         return;
+    }
+    
+    // for when a bullet collides with player/enemy/barrier
+    public void killBullet() {
+    	live = false;
     }
     
     public void draw(Graphics2D g) {
