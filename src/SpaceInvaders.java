@@ -16,19 +16,34 @@ public class SpaceInvaders extends GameCore {
     protected GameAction moveLeft;
     protected GameAction moveRight;
     protected GameAction pause;
+    protected GameAction moveUp;
+    protected GameAction moveDown;
     protected InputManager inputManager;
     private Player player;
+    private Sprite cursor;
     private Image bgImage;
     private boolean paused;
+    
+    private float playPos;
+    private float helpPos;
+    private float backPos;
+    
+    // PlayMode takes three values:
+    // 0=TitleScreen, 1=HowToScreen, 2=PlayGame
+    private int PlayMode;
 
     public void init() {
         super.init();
+        PlayMode = 0; // title screen by default
         Window window = screen.getFullScreenWindow();
         inputManager = new InputManager(window);
+        
+        helpPos = screen.getHeight()-55;
+        playPos = helpPos-50;
+        backPos = screen.getHeight()-65;
 
         createGameActions();
-        loadBgImage();
-        createSprites();
+        createImages();
         paused = false;
     }
 
@@ -51,13 +66,22 @@ public class SpaceInvaders extends GameCore {
     public void update(long elapsedTime) {
         // check input that can happen whether paused or not
         checkSystemInput();
+        
+        if (PlayMode == 0 || PlayMode == 1) {
+            cursor.update(elapsedTime);
+        }
 
-        if (isPaused() != true) {
-            // check game input
-            checkGameInput();
+        if (PlayMode == 2) {
+        	if (isPaused() != true) {
+		        // check game input
+		        checkGameInput();
 
-            // update sprite
-            player.update(elapsedTime);
+		        // update sprite
+		        player.update(elapsedTime);
+		    }
+        }
+        else {
+        	checkGameInput();
         }
     }
 
@@ -67,7 +91,7 @@ public class SpaceInvaders extends GameCore {
         regardless of whether the game is paused or not.
     */
     public void checkSystemInput() {
-        if (pause.isPressed()) {
+        if (pause.isPressed() && PlayMode == 2) {
             setPaused(!isPaused());
         }
         if (exit.isPressed()) {
@@ -81,18 +105,43 @@ public class SpaceInvaders extends GameCore {
         only when the game is not paused.
     */
     public void checkGameInput() {
-        if (moveLeft.isPressed() && player.getX() > 0) {
-            player.moveLeft();
-        } else if (moveRight.isPressed() &&
-        			 player.getX() < (screen.getWidth() - player.getWidth())) {
-            player.moveRight();
-        } else {
-        	player.setVelocityX(0);
-        }
+    	
+    	if (PlayMode == 0) {
+    		if (moveDown.isPressed() && cursor.getY() != helpPos) {
+            	cursor.setY(helpPos);
+		    } else if (moveUp.isPressed() && cursor.getY() != playPos) {
+		        cursor.setY(playPos);
+		    }
+		    if (shoot.isPressed() == true)
+		    {
+		    	if (cursor.getY() == helpPos) {
+		    		PlayMode = 1; // help mode
+		    	} else {
+		    		PlayMode = 2; // game mode
+		    	}
+		    	createImages();
+		    }
+    	} else if (PlayMode == 1) {
+    		if (shoot.isPressed() == true)
+		    {
+		    	PlayMode = 0;
+		    	createImages();
+		    }
+    	} else {
+		    if (moveLeft.isPressed() && player.getX() > 0) {
+		        player.moveLeft();
+		    } else if (moveRight.isPressed() &&
+		    			 player.getX() < (screen.getWidth()
+		    			 					- player.getWidth())) {
+		        player.moveRight();
+		    } else {
+		    	player.setVelocityX(0);
+		    }
 
-        if (shoot.isPressed() == true)
-        {
-            player.shoot();
+		    if (shoot.isPressed() == true)
+		    {
+		        player.shoot();
+		    }
         }
     }
 
@@ -102,7 +151,14 @@ public class SpaceInvaders extends GameCore {
         g.drawImage(bgImage, 0, 0, null);
 
         // draw sprite
-        player.draw(g);
+        if (PlayMode == 0 || PlayMode == 1) {
+        	g.drawImage(cursor.getImage(),
+            Math.round(cursor.getX()),
+            Math.round(cursor.getY()),
+            null);
+        } else {
+        	player.draw(g);
+        }
     }
 
 
@@ -116,6 +172,8 @@ public class SpaceInvaders extends GameCore {
             GameAction.DETECT_INITAL_PRESS_ONLY);
         moveLeft = new GameAction("moveLeft");
         moveRight = new GameAction("moveRight");
+        moveUp   = new GameAction("moveUp");
+        moveDown = new GameAction("moveDown");
         pause = new GameAction("pause",
             GameAction.DETECT_INITAL_PRESS_ONLY);
 
@@ -132,16 +190,50 @@ public class SpaceInvaders extends GameCore {
         // ... or with A and D.
         inputManager.mapToKey(moveLeft, KeyEvent.VK_A);
         inputManager.mapToKey(moveRight, KeyEvent.VK_D);
+        
+        // move with the arrow keys...
+        inputManager.mapToKey(moveUp, KeyEvent.VK_UP);
+        inputManager.mapToKey(moveDown, KeyEvent.VK_DOWN);
+
+        // ... or with A and D.
+        inputManager.mapToKey(moveUp, KeyEvent.VK_W);
+        inputManager.mapToKey(moveDown, KeyEvent.VK_S);
 
     }
     
-   	private void loadBgImage() {
-   		bgImage = loadImage("../graphics/background.png");
+   	private void loadBgImage(String filename) {
+   		bgImage = loadImage(filename);
    	}
    	
-   	private void createSprites() {
-    	createPlayerSprite();
-    	createEnemySprites();
+   	private void createImages() {
+   		cursor = null;
+   		player = null;
+   		if (PlayMode == 0) {
+   			loadBgImage("../graphics/TitleScreen.png");
+   			createCursorSprite(50, playPos);
+   		} else if (PlayMode == 1) {
+   			loadBgImage("../graphics/HowToPlayScreen.png");
+   			createCursorSprite(20, backPos);
+   		} else {
+   			loadBgImage("../graphics/background.png");
+   			createPlayerSprite();
+    		createEnemySprites();
+   		}
+    	return;
+   	}
+   	
+   	private void createCursorSprite(float X, float Y) {
+   		// load image
+        Image curImg1 = loadImage("../graphics/small_ship_1.png");
+        Image curImg2 = loadImage("../graphics/small_ship_2.png");
+
+        // create animation
+        Animation anim = new Animation();
+        anim.addFrame(curImg1, 500);
+        anim.addFrame(curImg2, 500);
+   		cursor = new Sprite(anim);
+   		cursor.setY(Y);
+   		cursor.setX(X);
     	return;
    	}
    	
@@ -151,7 +243,7 @@ public class SpaceInvaders extends GameCore {
 
         // create animation
         Animation anim = new Animation();
-        anim.addFrame(shipImg, 1000); 
+        anim.addFrame(shipImg, 1000);
    		player = new Player(anim, 0, screen.getHeight());
    		return;
    	}
