@@ -1,11 +1,14 @@
 import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.event.KeyEvent;
 
 import com.brackeen.javagamebook.graphics.*;
 import com.brackeen.javagamebook.input.*;
 import com.brackeen.javagamebook.test.GameCore;
 
-public class SpaceInvaders extends GameCore {
+public class SpaceInvaders extends GameCore implements MouseMotionListener, MouseListener {
 
     public static void main(String[] args) {
         new SpaceInvaders().run();
@@ -21,16 +24,27 @@ public class SpaceInvaders extends GameCore {
     protected InputManager inputManager;
     private Player player;
     private Sprite cursor;
+    private Sprite pauseSprite;
     private Image bgImage;
     private boolean paused;
     
     private float playPos;
     private float helpPos;
     private float backPos;
+    private float resetPos;
+    private float clearPos;
+    private float exitPos;
+    
+    // integer value of 0=None, 1=Reset, 2=Clear, 3=Exit
+    private int pauseSelect = 0;
+    
+    private int mouseX;
+    private int mouseY;
     
     // PlayMode takes three values:
-    // 0=TitleScreen, 1=HowToScreen, 2=PlayGame
+    // 0=TitleScreen, 1=HowToScreen, 2=PlayGame, 3=GamePaused
     private int PlayMode;
+    private int setNewPlayMode = -1;
 
     public void init() {
         super.init();
@@ -38,15 +52,89 @@ public class SpaceInvaders extends GameCore {
         Window window = screen.getFullScreenWindow();
         inputManager = new InputManager(window);
         
-        helpPos = screen.getHeight()-55;
-        playPos = helpPos-50;
-        backPos = screen.getHeight()-65;
+        helpPos = 73*screen.getHeight()/80;
+        playPos = 33*screen.getHeight()/40;
+        backPos = 223*screen.getHeight()/250;
+        
+        resetPos = 9 * screen.getHeight() / 20;
+        clearPos = 10 * screen.getHeight() / 20;
+        exitPos  = 11 * screen.getHeight() / 20;
 
         createGameActions();
         createImages();
         paused = false;
+        
+        window.addMouseMotionListener(this);
+        window.addMouseListener(this);
     }
-
+    
+	public synchronized void mouseMoved(MouseEvent e) {
+        mouseX = e.getX();
+        mouseY = e.getY();
+        
+        if (PlayMode == 0 && e.getX() < 3*screen.getWidth()/7 &&
+        			e.getY() > 4*screen.getHeight()/5) {
+		    if (cursor.getY() != playPos &&
+		    			e.getY() < (helpPos+playPos)/2) {
+		    	cursor.setY(playPos);
+		    } else if (cursor.getY() != helpPos &&
+		    				e.getY() > (helpPos + playPos)/2) {
+		    	cursor.setY(helpPos);
+		    }
+		} else if (PlayMode == 2) {
+			player.setX(e.getX()-player.getWidth()/2);
+		} else if (PlayMode == 3) {
+			if (e.getY() > (pauseSprite.getY()+30) &&
+				e.getY() < (pauseSprite.getY()+pauseSprite.getHeight()) &&
+				e.getX() < (pauseSprite.getX()+pauseSprite.getWidth()) &&
+				e.getX() > (pauseSprite.getX())) {
+			// change pauseSprite image
+			
+				if (e.getY() < exitPos) {
+					if (e.getY() < clearPos) {
+						Image   i =
+						loadImage("../graphics/pauseScreenResetHighlight.png");
+						Animation anim = new Animation();
+						anim.addFrame(i,1000);
+						Sprite ts = new Sprite(anim);
+						ts.setX(pauseSprite.getX());
+						ts.setY(pauseSprite.getY());
+						pauseSprite = ts;
+						pauseSelect = 1;
+					} else {
+						Image   i =
+						loadImage("../graphics/pauseScreenClearHighlight.png");
+						Animation anim = new Animation();
+						anim.addFrame(i,1000);
+						Sprite ts = new Sprite(anim);
+						ts.setX(pauseSprite.getX());
+						ts.setY(pauseSprite.getY());
+						pauseSprite = ts;
+						pauseSelect = 2;
+					}
+				} else {
+					Image   i =
+						loadImage("../graphics/pauseScreenExitHighlight.png");
+					Animation anim = new Animation();
+					anim.addFrame(i,1000);
+					Sprite ts = new Sprite(anim);
+					ts.setX(pauseSprite.getX());
+					ts.setY(pauseSprite.getY());
+					pauseSprite = ts;
+					pauseSelect = 3;
+				}
+			} else {
+				Image   i =
+					loadImage("../graphics/pauseScreen.png");
+				Animation anim = new Animation();
+				anim.addFrame(i,1000);
+				Sprite ts = new Sprite(anim);
+				ts.setX(pauseSprite.getX());
+				ts.setY(pauseSprite.getY());
+				pauseSprite = ts;
+			}
+		}
+    }
 
     /* Tests whether the game is paused or not */
     public boolean isPaused() {
@@ -57,13 +145,33 @@ public class SpaceInvaders extends GameCore {
     /* Sets the paused state */
     public void setPaused(boolean p) {
         if (paused != p) {
+        	if (p == true) {
+        		// load sprite for pause menu
+        		Image pauseImage = loadImage("../graphics/pauseScreen.png");
+        		Animation anim = new Animation();
+        		anim.addFrame(pauseImage, 1000);
+        		pauseSprite = new Sprite(anim);
+				pauseSprite.setX(screen.getWidth()/2
+									-pauseSprite.getWidth()/2);
+				pauseSprite.setY(screen.getHeight()/2
+									-pauseSprite.getHeight()/2);
+				PlayMode = 3;
+        	} else {
+        		pauseSprite = null;
+        		PlayMode = 2;
+        	}
             this.paused = p;
             inputManager.resetAllGameActions();
         }
     }
 
-
     public void update(long elapsedTime) {
+    	if (setNewPlayMode != -1) {
+    		PlayMode = setNewPlayMode;
+    		createImages();
+    		setNewPlayMode = -1;
+    	}
+    	
         // check input that can happen whether paused or not
         checkSystemInput();
         
@@ -91,14 +199,17 @@ public class SpaceInvaders extends GameCore {
         regardless of whether the game is paused or not.
     */
     public void checkSystemInput() {
-        if (pause.isPressed() && PlayMode == 2) {
+        if (pause.isPressed() && (PlayMode == 2 || PlayMode == 3)) {
             setPaused(!isPaused());
+        } else if(PlayMode == 3) {
+        	if (true) {
+        		
+        	}
         }
         if (exit.isPressed()) {
             stop();
         }
     }
-
 
     /**
         Checks input from GameActions that can be pressed
@@ -127,8 +238,9 @@ public class SpaceInvaders extends GameCore {
 		    	PlayMode = 0;
 		    	createImages();
 		    }
-    	} else {
-		    if (moveLeft.isPressed() && player.getX() > 0) {
+    	} else if (PlayMode == 2) {
+		    if (moveLeft.isPressed() &&
+		    				player.getX() > 0) {
 		        player.moveLeft();
 		    } else if (moveRight.isPressed() &&
 		    			 player.getX() < (screen.getWidth()
@@ -158,6 +270,12 @@ public class SpaceInvaders extends GameCore {
             null);
         } else {
         	player.draw(g);
+        	if (pauseSprite != null) {
+        		g.drawImage(pauseSprite.getImage(),
+				    Math.round(pauseSprite.getX()),
+				    Math.round(pauseSprite.getY()),
+				    null);
+        	}
         }
     }
 
@@ -215,7 +333,8 @@ public class SpaceInvaders extends GameCore {
    			loadBgImage("../graphics/HowToPlayScreen.png");
    			createCursorSprite(20, backPos);
    		} else {
-   			loadBgImage("../graphics/background.png");
+   			setPaused(false); // if coming out of reset, unpause
+   			loadBgImage("../graphics/bgImproved.png");
    			createPlayerSprite();
     		createEnemySprites();
    		}
@@ -244,7 +363,7 @@ public class SpaceInvaders extends GameCore {
         // create animation
         Animation anim = new Animation();
         anim.addFrame(shipImg, 1000);
-   		player = new Player(anim, 0, screen.getHeight());
+   		player = new Player(anim, 25, screen.getHeight()-40);
    		return;
    	}
    	
@@ -252,5 +371,58 @@ public class SpaceInvaders extends GameCore {
    		
    		return;
    	}
+   	
+   	// from the MouseMotionListener interface
+    public void mouseDragged(MouseEvent e) {
+        mouseMoved(e);
+    }
+    
+    // from the MouseListener interface
+    public void mousePressed(MouseEvent e) {
+    }
+
+
+    // from the MouseListener interface
+    public void mouseReleased(MouseEvent e) {
+        // do nothing
+    }
+
+
+    // from the MouseListener interface
+    public void mouseClicked(MouseEvent e) {
+        if (PlayMode == 2) {
+        	player.shoot();
+        } else if (PlayMode == 1) {
+        	setNewPlayMode = 0;
+        } else if (PlayMode == 0) {
+        	if (cursor.getY() == helpPos) {
+        		// go to help
+        		setNewPlayMode = 1;
+        	} else {
+        		// go to game
+        		setNewPlayMode = 2;
+        	}
+        } else if (PlayMode == 3) {
+        	// select option
+        	if (pauseSelect == 1) {
+        		setNewPlayMode = 2;
+        	} else if (pauseSelect == 2) {
+        		// call some subroutine to clear the high score
+        	} else if (pauseSelect == 3) {
+        		stop();
+        	}
+        	pauseSelect = 0;
+        }
+    }
+
+
+    // from the MouseListener interface
+    public void mouseEntered(MouseEvent e) {
+    }
+
+
+    // from the MouseListener interface
+    public void mouseExited(MouseEvent e) {
+    }
 
 }

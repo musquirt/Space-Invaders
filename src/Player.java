@@ -6,7 +6,7 @@ import javax.swing.ImageIcon;
 public class Player extends Sprite {
 	// high for debugging purposes
 	// .15 seems to be a good speed
-    private static final float Speed = .5f;
+    private static final float Speed = .35f;
 
     private int     floorY;
     private int     screenMaxY;
@@ -17,7 +17,7 @@ public class Player extends Sprite {
         super(anim);
         screenMinY = screenMin;
         screenMaxY = screenMax;
-        setFloorY(screenMax - getHeight() + screenMin);
+        setFloorY(screenMax - getHeight());
     }
     
     private void createBullet() {
@@ -25,7 +25,7 @@ public class Player extends Sprite {
     				ImageIcon("../graphics/playerBullet.png").getImage();
     	Animation anim = new Animation();
     	anim.addFrame(bulletImg, 1000);
-    	theBullet = new Bullet(anim, getX()+getWidth()/2, getY()+getHeight(),
+    	theBullet = new Bullet(anim, getX()+getWidth()/2, getY()-getHeight(),
     								true, screenMaxY, screenMinY);
     	return;
     }
