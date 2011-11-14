@@ -36,7 +36,6 @@ public class Player extends Sprite {
         setY(floorY);
     }
     
-    /* TODO: Get this working */
     /* fires a bullet, if possible  */
     public void shoot() {
     	// one shot on the screen at a time
@@ -75,5 +74,16 @@ public class Player extends Sprite {
         if (theBullet != null) {
         	theBullet.update(elapsedTime);
         }
+    }
+    
+    public Point getBulletLocation() {
+    	if (theBullet != null) {
+			Point bPoint = new Point();
+			bPoint.x = (int)theBullet.getX();
+			bPoint.y = (int)theBullet.getY();
+			return bPoint;
+		} else {
+			return null;
+		}
     }
 }
