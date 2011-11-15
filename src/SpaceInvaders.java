@@ -4,6 +4,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.KeyEvent;
 import java.util.Random;
+import java.util.Calendar;
 
 import com.brackeen.javagamebook.graphics.*;
 import com.brackeen.javagamebook.input.*;
@@ -39,6 +40,9 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
     private boolean redOn;
     private Sprite redEnemy;
     private Random randNum;
+    private Sprite explosion;
+    private long time;
+    private long d_time;
     
     // integer value of 0=None, 1=Reset, 2=Clear, 3=Exit
     private int pauseSelect = 0;
@@ -95,7 +99,7 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 				e.getY() < (pauseSprite.getY()+pauseSprite.getHeight()) &&
 				e.getX() < (pauseSprite.getX()+pauseSprite.getWidth()) &&
 				e.getX() > (pauseSprite.getX())) {
-			// change pauseSprite image
+				// change pauseSprite image
 			
 				if (e.getY() < exitPos) {
 					if (e.getY() < clearPos) {
@@ -196,19 +200,17 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 		        
 		        if (redOn == true) {
 		        	redEnemy.update(elapsedTime);
-		        	randNum = null;
 		        	if (redEnemy.getX()+redEnemy.getWidth() <= 0) {
 		        		redOn = false;
 		        		redEnemy = null;
-		        		randNum = new Random();
 		        	}
 		        } else {
-		        	if (randNum.nextInt(10000) % 2000 == 0) {
+		        	if (randNum.nextInt(10000) % 20 == 0) {
 		        		Image redImage = loadImage("../graphics/xl_ship.png");
 		        		Animation anim = new Animation();
 		        		anim.addFrame(redImage,1000);
 		        		redEnemy = new Sprite(anim);
-		        		redEnemy.setY(40);
+		        		redEnemy.setY(screen.getHeight()/15);
 		        		redEnemy.setX(screen.getWidth()+redEnemy.getWidth());
 		        		redEnemy.setVelocityX(-.20f);
 		        		redOn = true;
@@ -240,7 +242,6 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
         only when the game is not paused.
     */
     public void checkGameInput() {
-    	
     	if (PlayMode == 0) {
     		if (moveDown.isPressed() && cursor.getY() != helpPos) {
             	cursor.setY(helpPos);
@@ -307,6 +308,16 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 				    Math.round(redEnemy.getX()),
 				    Math.round(redEnemy.getY()),
 				    null);
+        	}
+        	if (explosion != null) {
+        		g.drawImage(explosion.getImage(),
+        			Math.round(explosion.getX()),
+				    Math.round(explosion.getY()),
+				    null);
+				d_time = Calendar.getInstance().getTimeInMillis();
+				if (d_time - time >= 250) {
+					explosion = null;
+				}
         	}
         }
     }
@@ -395,7 +406,7 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
         // create animation
         Animation anim = new Animation();
         anim.addFrame(shipImg, 1000);
-   		player = new Player(anim, 25, screen.getHeight()-40);
+   		player = new Player(anim, screen.getHeight()/24, 14*screen.getHeight()/15);
    		return;
    	}
    	
@@ -466,9 +477,24 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 						p.y <= redEnemy.getY() &&
 						p.y >= redEnemy.getY()-redEnemy.getHeight()) {
 					System.out.println("red hit!");
+					destroyShipAnimation(redEnemy);
+					redOn = false;
+					redEnemy = null;
+					player.BulletCollided();
+					// increase score
 				}
 			}
     	}
+    }
+    
+    public void destroyShipAnimation(Sprite s) {
+    	Animation a = new Animation();
+    	Image i = loadImage("../graphics/explosion.png");
+    	a.addFrame(i,400);
+    	explosion = new Sprite(a);
+    	explosion.setX(s.getX()+Math.abs(s.getVelocityX())*40);
+    	explosion.setY(s.getY());
+    	time = Calendar.getInstance().getTimeInMillis();
     }
 
 }

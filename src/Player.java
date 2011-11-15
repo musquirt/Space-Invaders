@@ -86,4 +86,8 @@ public class Player extends Sprite {
 			return null;
 		}
     }
+    
+    public void BulletCollided() {
+    	theBullet.killBullet();
+    }
 }
