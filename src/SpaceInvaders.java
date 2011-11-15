@@ -205,7 +205,7 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 		        		redEnemy = null;
 		        	}
 		        } else {
-		        	if (randNum.nextInt(10000) % 20 == 0) {
+		        	if (randNum.nextInt(10000) % 2000 == 0) {
 		        		Image redImage = loadImage("../graphics/xl_ship.png");
 		        		Animation anim = new Animation();
 		        		anim.addFrame(redImage,1000);
