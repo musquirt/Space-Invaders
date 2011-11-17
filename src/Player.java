@@ -50,10 +50,18 @@ public class Player extends Sprite {
     	setVelocityX(-Player.Speed);
     	return;
     }
+    public void moveLeft(float customSpeed) {
+    	setVelocityX(-customSpeed);
+    	return;
+    }
     
     /* responsible for moving the player right */
     public void moveRight() {
     	setVelocityX(Player.Speed);
+    	return;
+    }
+    public void moveRight(float customSpeed) {
+    	setVelocityX(customSpeed);
     	return;
     }
     

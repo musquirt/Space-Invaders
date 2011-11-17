@@ -5,6 +5,8 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.KeyEvent;
 import java.util.Random;
 import java.util.Calendar;
+import java.util.Set;
+import java.util.HashSet;
 
 import com.brackeen.javagamebook.graphics.*;
 import com.brackeen.javagamebook.input.*;
@@ -44,6 +46,9 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
     private long time;
     private long d_time;
     
+    private Set<Sprite> scoreDigits;
+    private Set<Sprite> hiScoreDigits;
+    
     // integer value of 0=None, 1=Reset, 2=Clear, 3=Exit
     private int pauseSelect = 0;
     
@@ -75,23 +80,32 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
         redOn  = false;
         randNum = new Random();
         
+        scoreDigits = new HashSet<Sprite>(4);
+        hiScoreDigits = new HashSet<Sprite>(4);
+        
         window.addMouseMotionListener(this);
         window.addMouseListener(this);
+        
+        // start timing for demo mode
+        time = Calendar.getInstance().getTimeInMillis();
     }
     
 	public synchronized void mouseMoved(MouseEvent e) {
         mouseX = e.getX();
         mouseY = e.getY();
         
-        if (PlayMode == 0 && e.getX() < 3*screen.getWidth()/7 &&
+        if (PlayMode == 0) {
+        	if (e.getX() < 3*screen.getWidth()/7 &&
         			e.getY() > 4*screen.getHeight()/5) {
-		    if (cursor.getY() != playPos &&
-		    			e.getY() < (helpPos+playPos)/2) {
-		    	cursor.setY(playPos);
-		    } else if (cursor.getY() != helpPos &&
-		    				e.getY() > (helpPos + playPos)/2) {
-		    	cursor.setY(helpPos);
-		    }
+				if (cursor.getY() != playPos &&
+							e.getY() < (helpPos+playPos)/2) {
+					cursor.setY(playPos);
+				} else if (cursor.getY() != helpPos &&
+								e.getY() > (helpPos + playPos)/2) {
+					cursor.setY(helpPos);
+				}
+			}
+			time = Calendar.getInstance().getTimeInMillis();
 		} else if (PlayMode == 2) {
 			player.setX(e.getX()-player.getWidth()/2);
 		} else if (PlayMode == 3) {
@@ -144,6 +158,8 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 				ts.setY(pauseSprite.getY());
 				pauseSprite = ts;
 			}
+		} else if (PlayMode == 4) {
+			setNewPlayMode = 0;
 		}
     }
 
@@ -185,9 +201,15 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
     	
         // check input that can happen whether paused or not
         checkSystemInput();
-        
         if (PlayMode == 0 || PlayMode == 1) {
             cursor.update(elapsedTime);
+            if (PlayMode == 0) {
+            	if (Calendar.getInstance().getTimeInMillis() - time >= 1000) {
+            		// go to demo mode
+            		setNewPlayMode = 4;
+            		time = Calendar.getInstance().getTimeInMillis();
+            	}
+            }
         }
 
         if (PlayMode == 2) {
@@ -217,10 +239,65 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 		        	}
 		        }
 		    }
+        } else if (PlayMode == 4) {
+        	checkGameInput();
+        	moveDummyPlayer();
+        	player.update(elapsedTime);
+        	
+        	if (redOn == true) {
+		        	redEnemy.update(elapsedTime);
+		        	if (redEnemy.getX()+redEnemy.getWidth() <= 0) {
+		        		redOn = false;
+		        		redEnemy = null;
+		        	}
+		        } else {
+		        	if (randNum.nextInt(10000) % 2000 == 0) {
+		        		Image redImage = loadImage("../graphics/xl_ship.png");
+		        		Animation anim = new Animation();
+		        		anim.addFrame(redImage,1000);
+		        		redEnemy = new Sprite(anim);
+		        		redEnemy.setY(screen.getHeight()/15);
+		        		redEnemy.setX(screen.getWidth()+redEnemy.getWidth());
+		        		redEnemy.setVelocityX(-.20f);
+		        		redOn = true;
+		        	}
+		        }
         }
         else {
         	checkGameInput();
         }
+    }
+    
+    void moveDummyPlayer() {
+    	if (Calendar.getInstance().getTimeInMillis() - time >= 2500) {
+			int controlInt = randNum.nextInt(1000);
+			if (controlInt < 400) {
+				if (player.getX() > 0) {
+					player.moveLeft(.15f);
+				} else {
+					player.moveRight(.15f);
+				}
+			} else if (controlInt < 800) {
+				if (player.getX() < screen.getWidth() - player.getWidth()) {
+					player.moveRight(.15f);
+				} else {
+					player.moveLeft(.15f);
+				}
+			} else if (controlInt < 900) {
+				player.setVelocityX(0);
+				player.shoot();
+			} else {
+				player.shoot();
+			}
+			time = Calendar.getInstance().getTimeInMillis();
+		}
+		
+		if (player.getX() > screen.getWidth() - player.getWidth()) {
+			player.moveLeft(.15f);
+		} else if (player.getX() < 1) {
+			player.moveRight(.15f);
+		}
+		return;
     }
 
 
@@ -281,6 +358,11 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 		    }
 		    
 		    checkCollisions();
+        } else if (PlayMode == 4) {
+        	if (moveLeft.isPressed() || moveRight.isPressed() ||
+        				 shoot.isPressed()) {
+        		setNewPlayMode = 0;
+        	}
         }
     }
 
@@ -485,6 +567,7 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 				}
 			}
     	}
+    	
     }
     
     public void destroyShipAnimation(Sprite s) {
@@ -495,6 +578,10 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
     	explosion.setX(s.getX()+Math.abs(s.getVelocityX())*40);
     	explosion.setY(s.getY());
     	time = Calendar.getInstance().getTimeInMillis();
+    }
+    
+    public void createScoreSprites() {
+    	
     }
 
 }
