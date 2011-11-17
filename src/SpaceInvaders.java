@@ -7,6 +7,9 @@ import java.util.Random;
 import java.util.Calendar;
 import java.util.Set;
 import java.util.HashSet;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.util.Iterator;
 
 import com.brackeen.javagamebook.graphics.*;
 import com.brackeen.javagamebook.input.*;
@@ -17,6 +20,8 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
     public static void main(String[] args) {
         new SpaceInvaders().run();
     }
+    
+    static final int NUM_DIGITS = 5;
 
     protected GameAction shoot;
     protected GameAction exit;
@@ -46,6 +51,8 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
     private long time;
     private long d_time;
     
+    private int theScore;
+    private int hiScore;
     private Set<Sprite> scoreDigits;
     private Set<Sprite> hiScoreDigits;
     
@@ -59,6 +66,8 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
     // 0=TitleScreen, 1=HowToScreen, 2=PlayGame, 3=GamePaused
     private int PlayMode;
     private int setNewPlayMode = -1;
+    
+    public final String hiScoreFile = "../hiScores";
 
     public void init() {
         super.init();
@@ -80,8 +89,10 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
         redOn  = false;
         randNum = new Random();
         
-        scoreDigits = new HashSet<Sprite>(4);
-        hiScoreDigits = new HashSet<Sprite>(4);
+        scoreDigits = new HashSet<Sprite>();
+        hiScoreDigits = new HashSet<Sprite>();
+        
+        theScore = 0;
         
         window.addMouseMotionListener(this);
         window.addMouseListener(this);
@@ -204,7 +215,7 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
         if (PlayMode == 0 || PlayMode == 1) {
             cursor.update(elapsedTime);
             if (PlayMode == 0) {
-            	if (Calendar.getInstance().getTimeInMillis() - time >= 1000) {
+            	if (Calendar.getInstance().getTimeInMillis() - time >= 5000) {
             		// go to demo mode
             		setNewPlayMode = 4;
             		time = Calendar.getInstance().getTimeInMillis();
@@ -269,7 +280,7 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
     }
     
     void moveDummyPlayer() {
-    	if (Calendar.getInstance().getTimeInMillis() - time >= 2500) {
+    	if (Calendar.getInstance().getTimeInMillis() - time >= 2000) {
 			int controlInt = randNum.nextInt(1000);
 			if (controlInt < 400) {
 				if (player.getX() > 0) {
@@ -401,6 +412,23 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 					explosion = null;
 				}
         	}
+        	
+        	Iterator<Sprite> it = scoreDigits.iterator();
+        	while (it.hasNext()) {
+        		Sprite s = it.next();
+        		g.drawImage(s.getImage(),
+        			Math.round(s.getX()),
+        			Math.round(s.getY()),
+        			null);
+        	}
+        	it = hiScoreDigits.iterator();
+        	while (it.hasNext()) {
+        		Sprite s = it.next();
+        		g.drawImage(s.getImage(),
+        			Math.round(s.getX()),
+        			Math.round(s.getY()),
+        			null);
+        	}
         }
     }
 
@@ -462,6 +490,8 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
    			loadBgImage("../graphics/bgImproved.png");
    			createPlayerSprite();
     		createEnemySprites();
+    		createScoreSprites();
+    		createHiScoreSprites();
    		}
     	return;
    	}
@@ -558,12 +588,13 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 						p.x >= redEnemy.getX() &&
 						p.y <= redEnemy.getY() &&
 						p.y >= redEnemy.getY()-redEnemy.getHeight()) {
-					System.out.println("red hit!");
+					// increase score
+					theScore += 200;
 					destroyShipAnimation(redEnemy);
 					redOn = false;
 					redEnemy = null;
 					player.BulletCollided();
-					// increase score
+					
 				}
 			}
     	}
@@ -578,10 +609,92 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
     	explosion.setX(s.getX()+Math.abs(s.getVelocityX())*40);
     	explosion.setY(s.getY());
     	time = Calendar.getInstance().getTimeInMillis();
+    	
+    	// reevaluate score
+    	if (s != player) {
+    		createScoreSprites();
+    		System.out.println(theScore);
+    	} else { // reevaluate lives
+    		
+    	}
+    }
+    
+    public int getHiScoreFromFile() {
+    	try {
+    		FileReader fr = new FileReader(hiScoreFile);
+    		char[] buf = new char[NUM_DIGITS];
+    		fr.read(buf);
+    		return Integer.parseInt(new String(buf));
+    	} catch(Exception e) {
+    		// no hi-score file found
+    		return 0;
+    	}
+    }
+    
+    public void storeHiScoreToFile() {
+    	try {
+    		FileWriter fw = new FileWriter(hiScoreFile);
+    		String ts = Integer.toString(hiScore);
+    		char[] buf = ts.toCharArray();
+    		fw.write(buf,0,NUM_DIGITS);
+    		return;
+    	} catch(Exception e) {
+    		// file could not be opened
+    		return;
+    	}
     }
     
     public void createScoreSprites() {
-    	
+    	scoreDigits.clear();
+    	int offset = screen.getWidth()/8;
+    	for (int j=NUM_DIGITS; j>0; j--) {
+    		Image i = loadNumberImage(j, theScore);
+    		Animation a = new Animation();
+    		a.addFrame(i,1000);
+    		Sprite s = new Sprite(a);
+    		s.setX(offset);
+    		s.setY(screen.getHeight()/100);
+    		offset += 3*s.getWidth()/2;
+    		scoreDigits.add(s);
+    	}
+    }
+    
+    public void createHiScoreSprites() {
+    	hiScore = getHiScoreFromFile();
+    	hiScoreDigits.clear();
+    	int offset = 70*screen.getWidth()/82;
+    	for (int j=NUM_DIGITS; j>0; j--) {
+    		Image i = loadNumberImage(j, hiScore);
+    		Animation a = new Animation();
+    		a.addFrame(i,1000);
+    		Sprite s = new Sprite(a);
+    		s.setX(offset);
+    		s.setY(screen.getHeight()/100);
+    		offset += 3*s.getWidth()/2;
+    		hiScoreDigits.add(s);
+    	}
+    }
+    
+    public Image loadNumberImage(int pos, int theNum) {
+    	Image i = null;
+    	for (int j=pos-1; j>0; j--) {
+    		theNum = theNum / 10;
+    	}
+    	theNum = theNum % 10;
+    	switch (theNum) {
+    		case 0: i = loadImage("../graphics/num_0.png"); break;
+    		case 1: i = loadImage("../graphics/num_1.png"); break;
+    		case 2: i = loadImage("../graphics/num_2.png"); break;
+    		case 3: i = loadImage("../graphics/num_3.png"); break;
+    		case 4: i = loadImage("../graphics/num_4.png"); break;
+    		case 5: i = loadImage("../graphics/num_5.png"); break;
+    		case 6: i = loadImage("../graphics/num_6.png"); break;
+    		case 7: i = loadImage("../graphics/num_7.png"); break;
+    		case 8: i = loadImage("../graphics/num_8.png"); break;
+    		case 9: i = loadImage("../graphics/num_9.png"); break;
+    		default: break;
+    	}
+    	return i;
     }
 
 }

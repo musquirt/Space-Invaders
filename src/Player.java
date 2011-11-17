@@ -85,7 +85,7 @@ public class Player extends Sprite {
     }
     
     public Point getBulletLocation() {
-    	if (theBullet != null) {
+    	if (theBullet != null && theBullet.getLive() == true) {
 			Point bPoint = new Point();
 			bPoint.x = (int)theBullet.getX();
 			bPoint.y = (int)theBullet.getY();
