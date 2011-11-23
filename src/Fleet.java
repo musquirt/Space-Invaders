@@ -3,32 +3,40 @@ import java.awt.*;
 import javax.swing.ImageIcon;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 public class Fleet {
 	
 	private List<Enemy> ships = new ArrayList<Enemy>();
     private int    		screenMaxY;
     private int     	screenMinY;
-	private int 		numships;		
+	private int			screenMaxX;	
 	private float		speed;
+	private float		vx;
+	private float		vy;
 	private int 		columns;
 	private int 		rows;
 	private int 		vertspace;
 	private int 		horizspace;
 	private int			yoffset;
 	private int			xoffset;
+	private boolean     down;
+	private long		time;
+	private boolean 	gameover;
+	public static float startingspeed;
 	
-	public Fleet(int screenMin, int screenMax) {
+	public Fleet(int screenMin, int screenMax, int screenMaxx) {
 		columns = 11;
 		rows = 5;
-		vertspace = 30;
-		horizspace = 40;
+		vertspace = 25;
+		horizspace = 30;
 		yoffset = 100;
 		xoffset = 100;
-		float startingspeed = .05f;
-		
-		numships = columns*rows;
+		down = false;
+		vy = 0f;
+		gameover = false;
 		speed = startingspeed;
+		vx = speed;
 		
 		Image small1 = new ImageIcon("../graphics/small_ship_1.png").getImage();
 		Image small2 = new ImageIcon("../graphics/small_ship_2.png").getImage();
@@ -39,6 +47,7 @@ public class Fleet {
 			
 		screenMinY = screenMin;
         screenMaxY = screenMax;
+		screenMaxX = screenMaxx;
 		
 		int smalloffset = 0; // Small ships need to be offset to stay centered with rest of fleet
 		
@@ -46,29 +55,28 @@ public class Fleet {
 		for(int r = 0; r < rows; r++) {
 			
 			for(int c = 0; c < columns; c++) {
-				
 				// 1 row of small ships
 				if (r == 0) {
 					Animation small = new Animation();
-					small.addFrame(small1, 500);
-					small.addFrame(small2, 500);
-					ship = new Enemy(small, screenMin, screenMax);
+					small.addFrame(small1, 750);
+					small.addFrame(small2, 750);
+					ship = new Enemy(small, screenMin, screenMax, 40);
 					smalloffset = 3;
 				}
 				// 2 rows of medium ships
 				else if ((r == 1) || (r == 2)) {
 					Animation med = new Animation();
-					med.addFrame(med1, 500);
-					med.addFrame(med2, 500);
-					ship = new Enemy(med, screenMin, screenMax);
+					med.addFrame(med1, 750);
+					med.addFrame(med2, 750);
+					ship = new Enemy(med, screenMin, screenMax, 20);
 					smalloffset = 0;
 				}
 				// The rest are big ships
 				else {
 					Animation big = new Animation();
-					big.addFrame(big1, 500);
-					big.addFrame(big2, 500);
-					ship = new Enemy(big, screenMin, screenMax);
+					big.addFrame(big1, 750);
+					big.addFrame(big2, 750);
+					ship = new Enemy(big, screenMin, screenMax, 10);
 					smalloffset = 0;
 				}
 				
@@ -80,7 +88,7 @@ public class Fleet {
 	}
 
 	public void draw(Graphics2D g) {
-    	for (int i = 0; i < numships; i++) {
+    	for (int i = 0; i < ships.size(); i++) {
 			if (ships.get(i) != null) {
 				g.drawImage(ships.get(i).getImage(),
 				Math.round(ships.get(i).getX()),
@@ -94,12 +102,114 @@ public class Fleet {
     }
 	
 	public void update(long elapsedTime) {
-		for (int i = 0; i < numships; i++) {
+		if (gameover == true) {
+			return;
+		}
+		
+		boolean reverse = false;
+		for (int i = 0; i < ships.size(); i++) {
 			if (ships.get(i) != null) {
-				ships.get(i).setVelocityX(speed);
+				ships.get(i).setVelocityX(vx);
+				ships.get(i).setVelocityY(vy);
 				ships.get(i).update(elapsedTime);
+				if ((ships.get(i).getX() < 0) || (ships.get(i).getX() > (screenMaxX-ships.get(i).getWidth()))) {
+					reverse = true;
+				}
 			}
 		}
+		if ((reverse == true) && (down == false)) {
+			// Make sure ships are not off the screen
+			if (speed < 0) {
+				float minx = 0f;
+				for (int i = 0; i < ships.size(); i++) {
+					if (ships.get(i) != null) {
+						if (ships.get(i).getX() < minx) {
+							minx = ships.get(i).getX();
+						}
+					}
+				}
+				for (int i = 0; i < ships.size(); i++) {
+					if (ships.get(i) != null) {
+						ships.get(i).setX(ships.get(i).getX()-minx);
+					}
+				}
+			}
+			else {
+				float maxx = 0f;
+				for (int i = 0; i < ships.size(); i++) {
+					if (ships.get(i) != null) {
+						if ((screenMaxX-ships.get(i).getWidth())-ships.get(i).getX() < maxx) {
+							maxx = screenMaxX-ships.get(i).getWidth()-ships.get(i).getX();
+						}
+					}
+				}
+				for (int i = 0; i < ships.size(); i++) {
+					if (ships.get(i) != null) {
+						ships.get(i).setX(ships.get(i).getX()+maxx);
+					}
+				}
+			}
+			
+			// Increase speed
+			if ((speed > -1f) && (speed < 1f)) {
+				speed = speed * 1.05f;
+			}
+			else if (speed < 0) {
+				speed = -1f;
+			}
+			else {
+				speed = 1f;
+			}
+			speed = -speed;
+			
+			down = true;
+			vx = 0;
+			vy = .08f;
+			time = Calendar.getInstance().getTimeInMillis();
+		}
+		
+		if (down == true) {
+			if ((Calendar.getInstance().getTimeInMillis()-time) > vertspace/vy) {
+				down = false;
+				vx = speed;
+				vy = 0;
+			}
+			for(int i = 0; i < ships.size(); i++) {
+				if (ships.get(i) != null) {
+					if (ships.get(i).getY() >= ships.get(i).getFloorY()) {
+						gameover = true;
+						vx = 0;
+						vy = 0;
+					}
+				}
+			}
+		}
+		
+		
     }
+	
+	public Enemy checkCollisions(Point p) {
+		if (p == null) {
+			return null;
+		}
+		
+		for (int i = 0; i < ships.size(); i++) {
+			if (ships.get(i) != null) {
+				if ((p.x >= ships.get(i).getX()) && (p.x <= (ships.get(i).getX() + ships.get(i).getWidth()))
+					&& (p.y >= ships.get(i).getY()) && (p.y <= (ships.get(i).getY() + ships.get(i).getHeight())))
+				{	
+					Enemy hit = ships.get(i);
+					ships.set(i, null);
+					return hit;
+				}
+			}
+		}
+		
+		return null;
+	}
+	
+	public boolean checkGameOver() {
+		return gameover;
+	}
 	
 }

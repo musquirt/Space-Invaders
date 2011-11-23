@@ -7,12 +7,14 @@ public class Enemy extends Sprite {
     private int     floorY;
     private int     screenMaxY;
     private int     screenMinY;
+	private int		points;
 
-    public Enemy(Animation anim, int screenMin, int screenMax) {
+    public Enemy(Animation anim, int screenMin, int screenMax, int p) {
         super(anim);
         screenMinY = screenMin;
         screenMaxY = screenMax;
         floorY = screenMax - getHeight();
+		points = p;
     }
     
     /*public Bullet createBullet() {
@@ -48,5 +50,12 @@ public class Enemy extends Sprite {
     public void update(long elapsedTime) {
         super.update(elapsedTime);
     }
-
+	
+	public int getPoints() {
+		return points;
+	}
+	
+	public int getFloorY() {
+		return floorY;
+	}
 }
