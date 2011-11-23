@@ -74,6 +74,10 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
     private int setNewPlayMode = -1;
     
     public final String hiScoreFile = "../hiScores";
+	
+	// Enemy declarations
+	private Fleet invaders;
+	
 
     public void init() {
         super.init();
@@ -239,7 +243,8 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 
 		        // update sprite
 		        player.update(elapsedTime);
-		        
+		        invaders.update(elapsedTime);
+				
 		        if (redOn == true) {
 		        	redEnemy.update(elapsedTime);
 		        	if (redEnemy.getX()+redEnemy.getWidth() <= 0) {
@@ -405,6 +410,7 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 		        null);
         } else {
         	player.draw(g);
+			invaders.draw(g);
         	if (pauseSprite != null) {
         		g.drawImage(pauseSprite.getImage(),
 				    Math.round(pauseSprite.getX()),
@@ -497,7 +503,7 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
         inputManager.mapToKey(moveUp, KeyEvent.VK_UP);
         inputManager.mapToKey(moveDown, KeyEvent.VK_DOWN);
 
-        // ... or with A and D.
+        // ... or with W and S.
         inputManager.mapToKey(moveUp, KeyEvent.VK_W);
         inputManager.mapToKey(moveDown, KeyEvent.VK_S);
 
@@ -558,8 +564,15 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
    		return;
    	}
    	
-   	private void createEnemySprites() {
+   	
+	
+	
+	
+	private void createEnemySprites() {
    		
+		invaders = new Fleet(screen.getHeight()/24, 14*screen.getHeight()/15);
+		
+
    		return;
    	}
    	
