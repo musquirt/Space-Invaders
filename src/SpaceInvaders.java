@@ -78,7 +78,8 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 	// Enemy declarations
 	private Fleet invaders;
 	
-
+	
+	
     public void init() {
         super.init();
         PlayMode = 0; // title screen by default
@@ -249,7 +250,16 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 				if (invaders.checkGameOver() == true) {
 					gameOver();
 				}
-				
+				if (invaders.checkNextLevel() == true) {
+					Fleet.startingspeed = Fleet.startingspeed * -1.1f;
+					if (Fleet.startingspeed > 1f) {
+						Fleet.startingspeed = 1;
+					}
+					else if (Fleet.startingspeed < -1f) {
+						Fleet.startingspeed = -1;
+					}
+					createEnemySprites();
+				}
 				
 				if (explosion != null) {
 					explosion.update(elapsedTime);

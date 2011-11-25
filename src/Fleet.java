@@ -24,10 +24,13 @@ public class Fleet {
 	private long		time;
 	private boolean 	gameover;
 	public static float startingspeed;
+	private int			numships;
+	private boolean 	nextlevel;
 	
 	public Fleet(int screenMin, int screenMax, int screenMaxx) {
 		columns = 11;
 		rows = 5;
+		numships = rows*columns;
 		vertspace = 25;
 		horizspace = 30;
 		yoffset = 100;
@@ -37,6 +40,7 @@ public class Fleet {
 		gameover = false;
 		speed = startingspeed;
 		vx = speed;
+		nextlevel = false;
 		
 		Image small1 = new ImageIcon("../graphics/small_ship_1.png").getImage();
 		Image small2 = new ImageIcon("../graphics/small_ship_2.png").getImage();
@@ -200,6 +204,10 @@ public class Fleet {
 				{	
 					Enemy hit = ships.get(i);
 					ships.set(i, null);
+					numships--;
+					if (numships == 0) {
+						nextlevel = true;
+					}
 					return hit;
 				}
 			}
@@ -210,6 +218,10 @@ public class Fleet {
 	
 	public boolean checkGameOver() {
 		return gameover;
+	}
+	
+	public boolean checkNextLevel() {
+		return nextlevel;
 	}
 	
 }
