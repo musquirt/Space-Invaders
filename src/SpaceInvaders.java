@@ -7,6 +7,8 @@ import java.util.Random;
 import java.util.Calendar;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.List;
+import java.util.ArrayList;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.Iterator;
@@ -77,7 +79,7 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 	
 	// Enemy declarations
 	private Fleet invaders;
-	
+	private List<Bullet> missiles;
 	
 	
     public void init() {
@@ -115,6 +117,7 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
         time = Calendar.getInstance().getTimeInMillis();
 		
 		Fleet.startingspeed = .05f;
+		missiles = new ArrayList<Bullet>();
     }
     
 	public synchronized void mouseMoved(MouseEvent e) {
@@ -247,6 +250,19 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 		        // update sprite
 		        player.update(elapsedTime);
 		        invaders.update(elapsedTime);
+				invaders.shoot(missiles);
+				
+				int i = 0;
+				while (i < missiles.size()) {
+					missiles.get(i).update(elapsedTime);
+					if (missiles.get(i).getLive() == false) {
+						missiles.remove(i);
+					}
+					else {
+						i++;
+					}
+				}
+				
 				if (invaders.checkGameOver() == true) {
 					gameOver();
 				}
@@ -431,6 +447,10 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
         } else {
         	player.draw(g);
 			invaders.draw(g);
+			for (int i = 0; i < missiles.size(); i++) {
+				missiles.get(i).draw(g);
+			}
+			
         	if (pauseSprite != null) {
         		g.drawImage(pauseSprite.getImage(),
 				    Math.round(pauseSprite.getX()),
@@ -662,11 +682,20 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 					redOn = false;
 					redEnemy = null;
 					player.BulletCollided();
-					playerDied();
-					
 				}
 			}
     	}
+		
+		for (int i = 0; i < missiles.size(); i++) {
+			if (player.checkCollisions(missiles.get(i).getBulletLocation()) == true) {
+				playerDied();
+				destroyShipAnimation(player);
+				missiles.clear();
+				break;
+			}
+		}
+		
+		
 		Enemy hit = invaders.checkCollisions(player.getBulletLocation());
 		if (hit != null) {
 			theScore += hit.getPoints();

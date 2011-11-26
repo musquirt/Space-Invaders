@@ -22,6 +22,20 @@ public class Bullet extends Sprite {
         	setVelocityY(Bullet.Speed);
         }
     }
+	
+	public Bullet(Animation anim, float startPosX, float startPosY, boolean dir, int screenMax, int screenMin, float speed) {
+        super(anim);
+        live = true;
+        setX(startPosX);
+        setY(startPosY);
+        max = screenMax;
+        min = screenMin;
+        if (dir == true) {
+        	setVelocityY(-speed);
+        } else {
+        	setVelocityY(speed);
+        }
+    }
 
     /* Updates the bullet's positon and animation */
     public void update(long elapsedTime) {
@@ -41,6 +55,13 @@ public class Bullet extends Sprite {
     	live = false;
     }
     
+	public Point getBulletLocation() {
+		Point bPoint = new Point();
+		bPoint.x = (int)this.getX();
+		bPoint.y = (int)this.getY();
+		return bPoint;
+	}
+	
     public void draw(Graphics2D g) {
    		if (live == true) {
 			g.drawImage(getImage(),

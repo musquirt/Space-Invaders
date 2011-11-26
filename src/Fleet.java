@@ -4,6 +4,7 @@ import javax.swing.ImageIcon;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.lang.Math;
 
 public class Fleet {
 	
@@ -12,6 +13,7 @@ public class Fleet {
     private int     	screenMinY;
 	private int			screenMaxX;	
 	private float		speed;
+	private float		bulletspeed;
 	private float		vx;
 	private float		vy;
 	private int 		columns;
@@ -26,6 +28,7 @@ public class Fleet {
 	public static float startingspeed;
 	private int			numships;
 	private boolean 	nextlevel;
+	private double 		probability;
 	
 	public Fleet(int screenMin, int screenMax, int screenMaxx) {
 		columns = 11;
@@ -41,6 +44,8 @@ public class Fleet {
 		speed = startingspeed;
 		vx = speed;
 		nextlevel = false;
+		probability = 0.05;
+		bulletspeed = .25f;
 		
 		Image small1 = new ImageIcon("../graphics/small_ship_1.png").getImage();
 		Image small2 = new ImageIcon("../graphics/small_ship_2.png").getImage();
@@ -214,6 +219,51 @@ public class Fleet {
 		}
 		
 		return null;
+	}
+	
+	public void shoot(List<Bullet> missiles) {
+		double shot = Math.random();
+		if (shot < probability) {
+			int where = (int) Math.ceil(Math.random()*columns);
+			Enemy shooter = null;
+			for (int i = rows-1; i >= 0; i--) {
+				if (ships.get(i*columns+where-1) != null) {
+					shooter = ships.get(i*columns+where-1);
+					break;
+				}
+			}
+			
+			if (shooter == null) {
+				return;
+			}
+			
+			double type = Math.floor(Math.random()*2);
+			Animation bullet = new Animation();
+			if (type == 0) {
+				Image b1 = new ImageIcon("../graphics/enemy_bullet_1_1.png").getImage();
+				Image b2 = new ImageIcon("../graphics/enemy_bullet_1_2.png").getImage();
+				bullet.addFrame(b1, 210);
+				bullet.addFrame(b2, 210);
+			}
+			else {
+				Image b1 = new ImageIcon("../graphics/enemy_bullet_2_1.png").getImage();
+				Image b2 = new ImageIcon("../graphics/enemy_bullet_2_2.png").getImage();
+				Image b3 = new ImageIcon("../graphics/enemy_bullet_2_3.png").getImage();
+				Image b4 = new ImageIcon("../graphics/enemy_bullet_2_4.png").getImage();
+				Image b5 = new ImageIcon("../graphics/enemy_bullet_2_5.png").getImage();
+				Image b6 = new ImageIcon("../graphics/enemy_bullet_2_6.png").getImage();
+				bullet.addFrame(b6, 70);
+				bullet.addFrame(b5, 70);
+				bullet.addFrame(b4, 70);
+				bullet.addFrame(b3, 70);
+				bullet.addFrame(b2, 70);
+				bullet.addFrame(b1, 70);
+			}
+			
+			
+			Bullet bill = new Bullet(bullet, shooter.getX(), shooter.getY(), false, screenMaxY, screenMinY, bulletspeed);
+			missiles.add(bill);
+		}
 	}
 	
 	public boolean checkGameOver() {

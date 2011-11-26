@@ -94,6 +94,15 @@ public class Player extends Sprite {
 			return null;
 		}
     }
+	
+	public boolean checkCollisions(Point p) {
+		if ((p.x >= this.getX()) && (p.x <= this.getX() + this.getWidth())
+			&& (p.y >= this.getY()) && (p.y <= (this.getY() + this.getHeight())))
+		{	
+			return true;
+		}
+		return false;		
+	}
     
     public void BulletCollided() {
     	theBullet.killBullet();

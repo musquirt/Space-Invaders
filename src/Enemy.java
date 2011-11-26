@@ -16,16 +16,6 @@ public class Enemy extends Sprite {
         floorY = screenMax - getHeight();
 		points = p;
     }
-    
-    /*public Bullet createBullet() {
-    	Image bulletImg = new 
-    				ImageIcon("../graphics/playerBullet.png").getImage();
-    	Animation anim = new Animation();
-    	anim.addFrame(bulletImg, 1000);
-    	theBullet = new Bullet(anim, getX()+getWidth()/2, getY()-getHeight(),
-    								true, screenMaxY, screenMinY);
-    	return theBullet;
-    }*/
  
     /* moves the enemy left at the given speed */
     public void moveLeft(float customSpeed) {
