@@ -62,6 +62,8 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
     
     private int numLives = 0;
     private Set<Sprite> liveSprites;
+    private int levelNum = 0;
+    private Sprite levelDisp;
     
     // integer value of 0=None, 1=Reset, 2=Clear, 3=Exit
     private int pauseSelect = 0;
@@ -267,6 +269,8 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 					gameOver();
 				}
 				if (invaders.checkNextLevel() == true) {
+					changeLevel();
+					invaders.scaleProbability(1.5);
 					Fleet.startingspeed = Fleet.startingspeed * -1.1f;
 					if (Fleet.startingspeed > 1f) {
 						Fleet.startingspeed = 1;
@@ -304,6 +308,34 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
         	checkGameInput();
         	moveDummyPlayer();
         	player.update(elapsedTime);
+        	invaders.update(elapsedTime);
+			invaders.shoot(missiles);
+			
+			int i = 0;
+			while (i < missiles.size()) {
+				missiles.get(i).update(elapsedTime);
+				if (missiles.get(i).getLive() == false) {
+					missiles.remove(i);
+				}
+				else {
+					i++;
+				}
+			}
+			
+			if (invaders.checkGameOver() == true) {
+				setNewPlayMode = 0;
+			}
+			if (invaders.checkNextLevel() == true) {
+				changeLevel();
+				Fleet.startingspeed = Fleet.startingspeed * -1.1f;
+				if (Fleet.startingspeed > 1f) {
+					Fleet.startingspeed = 1;
+				}
+				else if (Fleet.startingspeed < -1f) {
+					Fleet.startingspeed = -1;
+				}
+				createEnemySprites();
+			}
         	
         	if (redOn == true) {
 		        	redEnemy.update(elapsedTime);
@@ -424,6 +456,7 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
         		setNewPlayMode = 0;
         		time = Calendar.getInstance().getTimeInMillis();
         	}
+        	checkCollisions();
         } else if (PlayMode == 5) {
         	if (shoot.isPressed()) {
         		setNewPlayMode = 0;
@@ -500,6 +533,11 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
         			null);
         	}
         	
+        	g.drawImage(levelDisp.getImage(),
+        			Math.round(levelDisp.getX()),
+        			Math.round(levelDisp.getY()),
+        			null);
+        	
         	if (PlayMode == 5) {
 		    	g.drawImage(GameOverSprite.getImage(),
 		    		Math.round(GameOverSprite.getX()),
@@ -548,6 +586,7 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
         inputManager.mapToKey(moveDown, KeyEvent.VK_S);
 
     }
+
     
    	private void loadBgImage(String filename) {
    		bgImage = loadImage(filename);
@@ -563,6 +602,7 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
    			loadBgImage("../graphics/HowToPlayScreen.png");
    			createCursorSprite(20, backPos);
    		} else {
+   			levelNum = 1;
    			setPaused(false); // if coming out of reset, unpause
    			loadBgImage("../graphics/bgImproved.png");
    			numLives = NUM_STARTING_LIVES;
@@ -571,6 +611,7 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
     		createScoreSprites();
     		createHiScoreSprites();
     		createLiveSprites();
+    		changeLevel();
     		if (PlayMode != 5) {
     			theScore = 0;
     		}
@@ -703,7 +744,10 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 			player.BulletCollided();
 		}
     	
-    	// if player gets hit, call playerDied()
+    	// don't want to keep track of scores during attract mode
+    	if (PlayMode == 4) {
+    		theScore = 0;
+    	}
     }
     
     public void playerDied() {
@@ -719,6 +763,11 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
     }
     
 	public void gameOver() {
+		// if we're in Attract, just go back to Title Screen
+		if (PlayMode == 4) {
+			setNewPlayMode = 0;
+			return;
+		}
 		// check   HI-SCORE, display appropriate message
 		Image i = null;
 		if (checkHiScore() == true) {
@@ -735,7 +784,18 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 								-GameOverSprite.getWidth()/2);
 		GameOverSprite.setY(screen.getHeight()/2
 								-GameOverSprite.getHeight()/2);
-		setNewPlayMode = 5; // (GAME OVER MODE)
+		PlayMode = 5; // (GAME OVER MODE)
+	}
+	
+	public void changeLevel() {
+		// change level display at bottom right of screen
+		Image i = loadNumberImage(1, levelNum);
+		Animation a = new Animation();
+		a.addFrame(i, 1000);
+		levelDisp = new Sprite(a);
+		levelDisp.setX(screen.getWidth()-levelDisp.getWidth()-5);
+		levelDisp.setY(screen.getHeight()-levelDisp.getHeight()-5);
+		levelNum++;
 	}
 	
     public void createLiveSprites() {
@@ -851,6 +911,7 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
     		offset += 3*s.getWidth()/2;
     		hiScoreDigits.add(s);
     	}
+
     }
     
     public Image loadNumberImage(int pos, int theNum) {

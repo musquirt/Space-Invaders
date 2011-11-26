@@ -44,7 +44,7 @@ public class Fleet {
 		speed = startingspeed;
 		vx = speed;
 		nextlevel = false;
-		probability = 0.05;
+		probability = 0.01;
 		bulletspeed = .25f;
 		
 		Image small1 = new ImageIcon("../graphics/small_ship_1.png").getImage();
@@ -94,6 +94,10 @@ public class Fleet {
 				ships.add(ship);
 			}
 		}
+	}
+	
+	public void scaleProbability(double scalar) {
+		probability = scalar * probability;
 	}
 
 	public void draw(Graphics2D g) {
