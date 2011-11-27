@@ -28,7 +28,7 @@ public class Fleet {
 	public static float startingspeed;
 	private int			numships;
 	private boolean 	nextlevel;
-	private double 		probability;
+	static private double probability = .01;
 	
 	public Fleet(int screenMin, int screenMax, int screenMaxx) {
 		columns = 11;
@@ -44,7 +44,6 @@ public class Fleet {
 		speed = startingspeed;
 		vx = speed;
 		nextlevel = false;
-		probability = 0.05;
 		bulletspeed = .25f;
 		
 		Image small1 = new ImageIcon("../graphics/small_ship_1.png").getImage();
@@ -94,6 +93,10 @@ public class Fleet {
 				ships.add(ship);
 			}
 		}
+	}
+	
+	static public void scaleProbability(double scalar) {
+		probability = scalar * probability;
 	}
 
 	public void draw(Graphics2D g) {
@@ -193,8 +196,6 @@ public class Fleet {
 				}
 			}
 		}
-		
-		
     }
 	
 	public Enemy checkCollisions(Point p) {
