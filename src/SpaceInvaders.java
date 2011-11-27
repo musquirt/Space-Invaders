@@ -270,7 +270,7 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 				}
 				if (invaders.checkNextLevel() == true) {
 					changeLevel();
-					invaders.scaleProbability(1.5);
+					Fleet.scaleProbability(1.5);
 					Fleet.startingspeed = Fleet.startingspeed * -1.1f;
 					if (Fleet.startingspeed > 1f) {
 						Fleet.startingspeed = 1;
@@ -378,10 +378,10 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 				}
 			} else if (controlInt < 900) {
 				player.setVelocityX(0);
-				player.shoot();
-			} else {
-				player.shoot();
 			}
+			
+			player.shoot();
+			
 			time = Calendar.getInstance().getTimeInMillis();
 		}
 		
@@ -718,7 +718,7 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 						p.y <= redEnemy.getY() &&
 						p.y >= redEnemy.getY()-redEnemy.getHeight()) {
 					// increase score
-					theScore += 200;
+					if (PlayMode != 4) theScore += 200;
 					destroyShipAnimation(redEnemy);
 					redOn = false;
 					redEnemy = null;
@@ -739,15 +739,10 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 		
 		Enemy hit = invaders.checkCollisions(player.getBulletLocation());
 		if (hit != null) {
-			theScore += hit.getPoints();
+			if (PlayMode != 4) theScore += hit.getPoints();
 			destroyShipAnimation(hit);
 			player.BulletCollided();
 		}
-    	
-    	// don't want to keep track of scores during attract mode
-    	if (PlayMode == 4) {
-    		theScore = 0;
-    	}
     }
     
     public void playerDied() {
