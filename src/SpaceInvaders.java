@@ -83,6 +83,9 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 	private Fleet invaders;
 	private List<Bullet> missiles;
 	
+	// Blockades
+	private Blockades blocks;
+	private Block b;
 	
     public void init() {
         super.init();
@@ -253,6 +256,7 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 		        player.update(elapsedTime);
 		        invaders.update(elapsedTime);
 				invaders.shoot(missiles);
+				blocks.update(elapsedTime);
 				
 				int i = 0;
 				while (i < missiles.size()) {
@@ -483,7 +487,7 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 			for (int i = 0; i < missiles.size(); i++) {
 				missiles.get(i).draw(g);
 			}
-			
+			blocks.draw(g);
         	if (pauseSprite != null) {
         		g.drawImage(pauseSprite.getImage(),
 				    Math.round(pauseSprite.getX()),
@@ -611,6 +615,7 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
     		createScoreSprites();
     		createHiScoreSprites();
     		createLiveSprites();
+			createBlockadeSprites();
     		changeLevel();
     		if (PlayMode != 5) {
     			theScore = 0;
@@ -619,6 +624,10 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
     	return;
    	}
    	
+	private void createBlockadeSprites() {
+		blocks = new Blockades(3, screen.getHeight(), screen.getWidth(), player);
+	}
+	
    	private void createCursorSprite(float X, float Y) {
    		// load image
         Image curImg1 = loadImage("../graphics/small_ship_1.png");
@@ -736,13 +745,14 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 			}
 		}
 		
-		
 		Enemy hit = invaders.checkCollisions(player.getBulletLocation());
 		if (hit != null) {
 			if (PlayMode != 4) theScore += hit.getPoints();
 			destroyShipAnimation(hit);
 			player.BulletCollided();
 		}
+		
+		blocks.checkCollisions(player, missiles);
     }
     
     public void playerDied() {

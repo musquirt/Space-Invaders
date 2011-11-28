@@ -4,19 +4,44 @@ import javax.swing.ImageIcon;
 
 public class Block extends Sprite {
 
-	static Image hit0 = new ImageIcon("../graphics/0hit.png").getImage();
-	static Image hit1 = new ImageIcon("../graphics/1hit.png").getImage();
-	static Image hit2 = new ImageIcon("../graphics/2hit.png").getImage();
-	static Image hit3 = new ImageIcon("../graphics/3hit.png").getImage();
-	static Image hit4 = new ImageIcon("../graphics/4hit.png").getImage();
+	private int hits;
 
-	public Block( ) {
+	public Block(Animation anim) {
+		super(anim);
+		hits = 0;
+	}
 	
+	public void setXY(int x, int y) {
+		setX(x);
+		setY(y);
+	}
 	
+	public void draw(Graphics2D g) {
+    	g.drawImage(getImage(),
+            Math.round(getX()),
+            Math.round(getY()),
+            null);
+    }
 	
+	public boolean gotHit() {
+		if (this.hits < 4) {
+			this.hits++;
+			this.update(1001);
+			return true;
+		}
+		return false;
 	}
 
-
-
+	public boolean checkCollisions(Point p) {
+		if (p == null) {	return false;	}
+		
+		if ((p.x >= this.getX()) && (p.x <= (this.getX() + this.getWidth()))
+			&& (p.y >= this.getY()) && (p.y <= (this.getY() + this.getHeight())))
+		{
+			return this.gotHit();
+		}
+		
+		return false;
+	}
 
 }

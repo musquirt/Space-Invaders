@@ -35,6 +35,10 @@ public class Player extends Sprite {
         this.floorY = floorY;
         setY(floorY);
     }
+	
+	public int getFloorY() {
+		return this.floorY;
+	}
     
     /* fires a bullet, if possible  */
     public void shoot() {
@@ -86,10 +90,11 @@ public class Player extends Sprite {
     
     public Point getBulletLocation() {
     	if (theBullet != null && theBullet.getLive() == true) {
-			Point bPoint = new Point();
+			/*Point bPoint = new Point();
 			bPoint.x = (int)theBullet.getX();
 			bPoint.y = (int)theBullet.getY();
-			return bPoint;
+			return bPoint;*/
+			return theBullet.getBulletLocation();
 		} else {
 			return null;
 		}
