@@ -103,6 +103,7 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 
         createGameActions();
         createImages();
+		
         paused = false;
         redOn  = false;
         randNum = new Random();
@@ -483,11 +484,11 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 		        null);
         } else {
         	player.draw(g);
+			blocks.draw(g);
 			invaders.draw(g);
 			for (int i = 0; i < missiles.size(); i++) {
 				missiles.get(i).draw(g);
 			}
-			blocks.draw(g);
         	if (pauseSprite != null) {
         		g.drawImage(pauseSprite.getImage(),
 				    Math.round(pauseSprite.getX()),
@@ -659,7 +660,7 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 	
 	
 	private void createEnemySprites() {
-		invaders = new Fleet(screen.getHeight()/24, 14*screen.getHeight()/15, screen.getWidth());
+		invaders = new Fleet(screen.getHeight()/24, 14*screen.getHeight()/15, screen.getWidth(), player);
 		return;
    	}
    	
@@ -752,7 +753,7 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 			player.BulletCollided();
 		}
 		
-		blocks.checkCollisions(player, missiles);
+		blocks.checkCollisions(player, missiles, invaders.getEnemies());
     }
     
     public void playerDied() {

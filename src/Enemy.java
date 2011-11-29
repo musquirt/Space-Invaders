@@ -48,4 +48,21 @@ public class Enemy extends Sprite {
 	public int getFloorY() {
 		return floorY;
 	}
+	
+	public Point getPosition() {
+		Point p = new Point();
+		if (getVelocityX() < 0) {
+			p.x = (int) getX();
+		}
+		else if (getVelocityX() > 0) {
+			p.x = (int) getX() + getWidth();
+		}
+		else {
+			p.x = (int) getX() + getWidth()/2;
+		}
+		p.y = (int) getY() + getHeight();
+		return p;
+	}
+
+
 }

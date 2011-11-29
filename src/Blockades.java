@@ -8,13 +8,16 @@ public class Blockades {
 
 	int screenHeight;
 	int screenWidth;
+	int top;
+	int count;
 	List<Block> blocks;
 	List<Sprite> barriers;
 	
 	
-	public Blockades(int count, int H, int W, Player p) {
+	public Blockades(int c, int H, int W, Player p) {
 		screenHeight = H;
 		screenWidth = W;
+		count = c;
 		
 		blocks = new ArrayList<Block>();
 		barriers = new ArrayList<Sprite>();
@@ -29,18 +32,18 @@ public class Blockades {
 		Image hit1 = new ImageIcon("../graphics/1hit.png").getImage();
 		Image hit2 = new ImageIcon("../graphics/2hit.png").getImage();
 		Image hit3 = new ImageIcon("../graphics/3hit.png").getImage();
-		Image hit4 = new ImageIcon("../graphics/4hit.png").getImage();
-		
-		
+
 		for(int i = 0; i < count; i++) {
 			Sprite b = new Sprite(anim);
 			b.setY(p.getY()-b.getHeight()-5);
 			b.setX((i+1)*divides-b.getWidth()/2);
 			barriers.add(b);
+			top = (int) b.getY();
 			
 			for(int j = 0; j < 4; j++) {
 				for(int k = 0; k < 6; k++) {
 					if ((j == 3) && ((k == 2) || (k == 3))) {
+						blocks.add(null);
 					}
 					else {
 						Animation ba = new Animation();
@@ -48,7 +51,6 @@ public class Blockades {
 						ba.addFrame(hit1, 1000);
 						ba.addFrame(hit2, 1000);
 						ba.addFrame(hit3, 1000);
-						ba.addFrame(hit4, 1000);
 						Block bl = new Block(ba);
 						bl.setXY((int) (i+1)*divides-b.getWidth()/2 + k*bl.getWidth(), (int) p.getY()-b.getHeight()-5 + j*bl.getHeight());
 						blocks.add(bl);
@@ -59,12 +61,18 @@ public class Blockades {
 		}
 	}
 	
+	public int getTop() {
+		return top;
+	}
+	
 	public void update(long elapsedtime) {
 		for(int i = 0; i < barriers.size(); i++) {
 			barriers.get(i).update(elapsedtime);
 		}
 		for(int i = 0; i < blocks.size(); i++) {
-			blocks.get(i).update(0);
+			if (blocks.get(i) != null) {
+				blocks.get(i).update(0);
+			}
 		}
 	}
 	
@@ -76,24 +84,46 @@ public class Blockades {
             null);
 		}
 		for(int i = 0; i < blocks.size(); i++) {
-			blocks.get(i).draw(g);
+			if (blocks.get(i) != null) {
+				blocks.get(i).draw(g);
+			}
 		}
 	}
 	
-	public void checkCollisions(Player p, List<Bullet> missiles) {
+	public void checkCollisions(Player p, List<Bullet> missiles, List<Enemy> ships) {
 		for(int i = 0; i < blocks.size(); i++) {
-			if (blocks.get(i).checkCollisions(p.getBulletLocation()) == true) {
-				p.BulletCollided();
-			}
-			int j = 0;
-			while (j < missiles.size()) {
-				if (blocks.get(i).checkCollisions(missiles.get(j).getBulletLocation()) == true) {
-					missiles.remove(j);
+			if (blocks.get(i) != null) {
+				if (blocks.get(i).checkCollisions(p.getBulletLocation()) == true) {
+					p.BulletCollided();
 				}
-				else {
-					j++;
+				int j = 0;
+				while (j < missiles.size()) {
+					if (blocks.get(i).checkCollisions(missiles.get(j).getBulletLocation()) == true) {
+						missiles.remove(j);
+					}
+					else {
+						j++;
+					}
+				}
+				for(int k = 0; k < ships.size(); k++) {
+					if ((ships.get(k) != null) && (blocks.get(i).checkCollisions(ships.get(k).getPosition()) == true)) {
+						j = i;
+						while ((j >= 0) && (j >= i-18)) {
+							boolean run = true;
+							while (run == true) {
+								if (blocks.get(j) != null) {
+									run = blocks.get(j).gotHit();
+								}
+								else {
+									run = false;
+								}
+							}
+							j -= 6;
+						}
+					}
 				}
 			}
+			
 		}
 	}
 

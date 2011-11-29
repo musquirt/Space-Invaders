@@ -29,8 +29,9 @@ public class Fleet {
 	private int			numships;
 	private boolean 	nextlevel;
 	static private double probability = .01;
+	private int 		floor;
 	
-	public Fleet(int screenMin, int screenMax, int screenMaxx) {
+	public Fleet(int screenMin, int screenMax, int screenMaxx, Player p) {
 		columns = 11;
 		rows = 5;
 		numships = rows*columns;
@@ -45,6 +46,7 @@ public class Fleet {
 		vx = speed;
 		nextlevel = false;
 		bulletspeed = .25f;
+		floor = (int) p.getY()-p.getHeight();
 		
 		Image small1 = new ImageIcon("../graphics/small_ship_1.png").getImage();
 		Image small2 = new ImageIcon("../graphics/small_ship_2.png").getImage();
@@ -98,7 +100,15 @@ public class Fleet {
 	static public void scaleProbability(double scalar) {
 		probability = scalar * probability;
 	}
-
+	
+	public void setFloor(int f) {
+		floor = f;
+	}
+	
+	public List<Enemy> getEnemies() {
+		return ships;
+	}
+	
 	public void draw(Graphics2D g) {
     	for (int i = 0; i < ships.size(); i++) {
 			if (ships.get(i) != null) {
@@ -188,7 +198,7 @@ public class Fleet {
 			}
 			for(int i = 0; i < ships.size(); i++) {
 				if (ships.get(i) != null) {
-					if (ships.get(i).getY() >= ships.get(i).getFloorY()) {
+					if (ships.get(i).getY() >= floor) {
 						gameover = true;
 						vx = 0;
 						vy = 0;

@@ -39,7 +39,7 @@ public class Player extends Sprite {
 	public int getFloorY() {
 		return this.floorY;
 	}
-    
+	
     /* fires a bullet, if possible  */
     public void shoot() {
     	// one shot on the screen at a time
