@@ -292,10 +292,14 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 				
 		        if (redOn == true) {
 		        	redEnemy.update(elapsedTime);
-		        	if (redEnemy.getX()+redEnemy.getWidth() <= 0) {
+		        	if ((redEnemy.getVelocityX() < 0 && 
+		        			redEnemy.getX()+redEnemy.getWidth() <= 0) ||
+		        			redEnemy.getVelocityX() > 0 &&
+		        			redEnemy.getX()-redEnemy.getWidth() 
+		        			>= screen.getWidth()) {
 		        		redOn = false;
 		        		redEnemy = null;
-		        	}
+		        	} 
 		        } else {
 		        	int n = randNum.nextInt(10000);
 		        	if (n % 2000 == 0) {
@@ -304,16 +308,21 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 		        		anim.addFrame(redImage,1000);
 		        		redEnemy = new Sprite(anim);
 		        		redEnemy.setY(screen.getHeight()/15);
-		        		redEnemy.setX(screen.getWidth()+redEnemy.getWidth());
 		        		switch(n) {
-		        			case 0: redEnemy.setVelocityX(-.15f); break;
-		        			case 2000: redEnemy.setVelocityX(.15f); break;
+		        			case 0: redEnemy.setVelocityX(-.16f); break;
+		        			case 2000: redEnemy.setVelocityX(.16f); break;
 		        			case 4000: redEnemy.setVelocityX(-.20f); break;
 		        			case 6000: redEnemy.setVelocityX(.20f); break;
-		        			case 8000: redEnemy.setVelocityX(-.10f); break;
-		        			case 10000: redEnemy.setVelocityX(.10f); break;
+		        			case 8000: redEnemy.setVelocityX(-.13f); break;
+		        			case 10000: redEnemy.setVelocityX(.13f); break;
+		        			default: redEnemy.setVelocityX(-.18f); break;
 		        		}
-		        		redEnemy.setVelocityX(-.15f);
+		        		if (redEnemy.getVelocityX() < 0) {
+		        			redEnemy.setX(screen.getWidth()+
+		        							redEnemy.getWidth());
+		        		} else {
+		        			redEnemy.setX(0-redEnemy.getWidth());
+		        		}
 		        		redOn = true;
 		        	}
 		        }
@@ -353,19 +362,37 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
         	
         	if (redOn == true) {
 		        	redEnemy.update(elapsedTime);
-		        	if (redEnemy.getX()+redEnemy.getWidth() <= 0) {
+		        	if ((redEnemy.getVelocityX() < 0 && 
+		        			redEnemy.getX()+redEnemy.getWidth() <= 0) ||
+		        			redEnemy.getVelocityX() > 0 &&
+		        			redEnemy.getX()-redEnemy.getWidth() 
+		        			>= screen.getWidth()) {
 		        		redOn = false;
 		        		redEnemy = null;
-		        	}
+		        	} 
 		        } else {
-		        	if (randNum.nextInt(10000) % 2000 == 0) {
+		        	int n = randNum.nextInt(10000);
+		        	if (n % 2000 == 0) {
 		        		Image redImage = loadImage("../graphics/xl_ship.png");
 		        		Animation anim = new Animation();
 		        		anim.addFrame(redImage,1000);
 		        		redEnemy = new Sprite(anim);
 		        		redEnemy.setY(screen.getHeight()/15);
-		        		redEnemy.setX(screen.getWidth()+redEnemy.getWidth());
-		        		redEnemy.setVelocityX(-.20f);
+		        		switch(n) {
+		        			case 0: redEnemy.setVelocityX(-.16f); break;
+		        			case 2000: redEnemy.setVelocityX(.16f); break;
+		        			case 4000: redEnemy.setVelocityX(-.20f); break;
+		        			case 6000: redEnemy.setVelocityX(.20f); break;
+		        			case 8000: redEnemy.setVelocityX(-.13f); break;
+		        			case 10000: redEnemy.setVelocityX(.13f); break;
+		        			default: redEnemy.setVelocityX(-.18f); break;
+		        		}
+		        		if (redEnemy.getVelocityX() < 0) {
+		        			redEnemy.setX(screen.getWidth()+
+		        							redEnemy.getWidth());
+		        		} else {
+		        			redEnemy.setX(0-redEnemy.getWidth());
+		        		}
 		        		redOn = true;
 		        	}
 		        }
