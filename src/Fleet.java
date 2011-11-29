@@ -37,7 +37,7 @@ public class Fleet {
 		numships = rows*columns;
 		vertspace = 25;
 		horizspace = 30;
-		yoffset = 100;
+		yoffset = 65;
 		xoffset = 100;
 		down = false;
 		vy = 0f;

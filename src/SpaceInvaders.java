@@ -297,14 +297,23 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
 		        		redEnemy = null;
 		        	}
 		        } else {
-		        	if (randNum.nextInt(10000) % 2000 == 0) {
+		        	int n = randNum.nextInt(10000);
+		        	if (n % 2000 == 0) {
 		        		Image redImage = loadImage("../graphics/xl_ship.png");
 		        		Animation anim = new Animation();
 		        		anim.addFrame(redImage,1000);
 		        		redEnemy = new Sprite(anim);
 		        		redEnemy.setY(screen.getHeight()/15);
 		        		redEnemy.setX(screen.getWidth()+redEnemy.getWidth());
-		        		redEnemy.setVelocityX(-.20f);
+		        		switch(n) {
+		        			case 0: redEnemy.setVelocityX(-.15f); break;
+		        			case 2000: redEnemy.setVelocityX(.15f); break;
+		        			case 4000: redEnemy.setVelocityX(-.20f); break;
+		        			case 6000: redEnemy.setVelocityX(.20f); break;
+		        			case 8000: redEnemy.setVelocityX(-.10f); break;
+		        			case 10000: redEnemy.setVelocityX(.10f); break;
+		        		}
+		        		redEnemy.setVelocityX(-.15f);
 		        		redOn = true;
 		        	}
 		        }
@@ -609,7 +618,11 @@ public class SpaceInvaders extends GameCore implements MouseMotionListener, Mous
    		} else {
    			levelNum = 1;
    			setPaused(false); // if coming out of reset, unpause
-   			loadBgImage("../graphics/bgImproved.png");
+   			if (PlayMode == 4) {
+   				loadBgImage("../graphics/bgAttract.png");
+   			} else {
+   				loadBgImage("../graphics/bgImproved.png");
+   			}
    			numLives = NUM_STARTING_LIVES;
    			createPlayerSprite();
     		createEnemySprites();
