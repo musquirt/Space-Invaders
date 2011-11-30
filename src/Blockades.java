@@ -91,19 +91,10 @@ public class Blockades {
 	}
 	
 	public void checkCollisions(Player p, List<Bullet> missiles, List<Enemy> ships) {
-		for(int i = 0; i < blocks.size(); i++) {
+		for(int i = blocks.size() - 1; i >= 0; i--) {
 			if (blocks.get(i) != null) {
 				if (blocks.get(i).checkCollisions(p.getBulletLocation()) == true) {
 					p.BulletCollided();
-				}
-				int j = 0;
-				while (j < missiles.size()) {
-					if (blocks.get(i).checkCollisions(missiles.get(j).getBulletLocation()) == true) {
-						missiles.remove(j);
-					}
-					else {
-						j++;
-					}
 				}
 				for(int k = 0; k < ships.size(); k++) {
 					if (ships.get(k) != null) {
@@ -113,7 +104,17 @@ public class Blockades {
 					}
 				}
 			}
-			
+			if (blocks.get(blocks.size()-1-i) != null) {
+				int j = 0;
+				while (j < missiles.size()) {
+					if (blocks.get(blocks.size()-1-i).checkCollisions(missiles.get(j).getBulletLocation()) == true) {
+						missiles.remove(j);
+					}
+					else {
+						j++;
+					}
+				}
+			}
 		}
 	}
 
