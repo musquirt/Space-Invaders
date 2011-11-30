@@ -35,7 +35,7 @@ public class Blockades {
 
 		for(int i = 0; i < count; i++) {
 			Sprite b = new Sprite(anim);
-			b.setY(p.getY()-b.getHeight()-5);
+			b.setY(p.getY()-b.getHeight()-10);
 			b.setX((i+1)*divides-b.getWidth()/2);
 			barriers.add(b);
 			top = (int) b.getY();
@@ -52,7 +52,7 @@ public class Blockades {
 						ba.addFrame(hit2, 1000);
 						ba.addFrame(hit3, 1000);
 						Block bl = new Block(ba);
-						bl.setXY((int) (i+1)*divides-b.getWidth()/2 + k*bl.getWidth(), (int) p.getY()-b.getHeight()-5 + j*bl.getHeight());
+						bl.setXY((int) (i+1)*divides-b.getWidth()/2 + k*bl.getWidth(), (int) p.getY()-b.getHeight()-10 + j*bl.getHeight());
 						blocks.add(bl);
 					}
 				}
@@ -89,32 +89,49 @@ public class Blockades {
 			}
 		}
 	}
+	
+	public boolean checkPlayerCollisions(Player p, Block b) {
+		if (b.checkCollisions(p.getBulletLocation()) == true) {
+			p.BulletCollided();
+			return true;
+		}
+		return false;
+	}
+	
+	public void checkShipCollisions(List<Enemy> ships, Block b) {
+		for(int k = 0; k < ships.size(); k++) {
+			if (ships.get(k) != null) {
+				b.shipCollision(ships.get(k).getPositionM());
+				b.shipCollision(ships.get(k).getPositionL());
+				b.shipCollision(ships.get(k).getPositionR());
+			}
+		}
+	}
+	
+	public void checkBulletCollisions(List<Bullet> missiles, int num) {
+		if (blocks.get(blocks.size()-1-num) != null) {
+			int j = 0;
+			while (j < missiles.size()) {
+				if (blocks.get(blocks.size()-1-num).checkCollisions(missiles.get(j).getBulletLocation()) == true) {
+					missiles.remove(j);
+				}
+				else {
+					j++;
+				}
+			}
+		}
+	}
 
 	public void checkCollisions(Player p, List<Bullet> missiles, List<Enemy> ships) {
+		boolean playerBullet = false;
 		for(int i = blocks.size() - 1; i >= 0; i--) {
 			if (blocks.get(i) != null) {
-				if (blocks.get(i).checkCollisions(p.getBulletLocation()) == true) {
-					p.BulletCollided();
+				if (playerBullet == false) {
+					playerBullet = checkPlayerCollisions(p, blocks.get(i));
 				}
-				for(int k = 0; k < ships.size(); k++) {
-					if (ships.get(k) != null) {
-						blocks.get(i).shipCollision(ships.get(k).getPositionM());
-						blocks.get(i).shipCollision(ships.get(k).getPositionL());
-						blocks.get(i).shipCollision(ships.get(k).getPositionR());
-					}
-				}
+				checkShipCollisions(ships, blocks.get(i));
 			}
-			if (blocks.get(blocks.size()-1-i) != null) {
-				int j = 0;
-				while (j < missiles.size()) {
-					if (blocks.get(blocks.size()-1-i).checkCollisions(missiles.get(j).getBulletLocation()) == true) {
-						missiles.remove(j);
-					}
-					else {
-						j++;
-					}
-				}
-			}
+			checkBulletCollisions(missiles, i);
 		}
 	}
 

@@ -5,7 +5,7 @@ import javax.swing.ImageIcon;
 /* The Player class extends the Sprite class */
 public class Player extends Sprite {
 	// high for debugging purposes
-    private static final float Speed = .25f;
+    private static final float Speed = .20f;
 
     private int     floorY;
     private int     screenMaxY;
@@ -24,7 +24,7 @@ public class Player extends Sprite {
     				ImageIcon("../graphics/playerBullet.png").getImage();
     	Animation anim = new Animation();
     	anim.addFrame(bulletImg, 1000);
-    	theBullet = new Bullet(anim, getX()+getWidth()/2, getY()-getHeight(),
+    	theBullet = new Bullet(anim, getX()+getWidth()/2, getY()-getHeight()/2,
     								true, screenMaxY, screenMinY);
     	return;
     }
@@ -89,10 +89,6 @@ public class Player extends Sprite {
     
     public Point getBulletLocation() {
     	if (theBullet != null && theBullet.getLive() == true) {
-			/*Point bPoint = new Point();
-			bPoint.x = (int)theBullet.getX();
-			bPoint.y = (int)theBullet.getY();
-			return bPoint;*/
 			return theBullet.getBulletLocation();
 		} else {
 			return null;

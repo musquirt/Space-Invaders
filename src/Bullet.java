@@ -4,7 +4,7 @@ import java.awt.*;
 /* The Bullet class extends the Sprite class */
 public class Bullet extends Sprite {
 
-    private static final float Speed = .25f;
+    private static final float Speed = .23f;
     private boolean live;
     private int min;
     private int max;
@@ -58,7 +58,11 @@ public class Bullet extends Sprite {
 	public Point getBulletLocation() {
 		Point bPoint = new Point();
 		bPoint.x = (int) (this.getX()+this.getWidth()/2);
-		bPoint.y = (int) (this.getY());
+		if (this.getVelocityY() < 0) {
+			bPoint.y = (int) (this.getY()-this.getHeight());
+		} else {
+			bPoint.y = (int) (this.getY());
+		}
 		return bPoint;
 	}
 	
