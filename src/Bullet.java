@@ -4,7 +4,7 @@ import java.awt.*;
 /* The Bullet class extends the Sprite class */
 public class Bullet extends Sprite {
 
-    private static final float Speed = .35f;
+    private static final float Speed = .25f;
     private boolean live;
     private int min;
     private int max;
