@@ -44,6 +44,18 @@ public class Block extends Sprite {
 		return false;
 	}
 	
-	
+	public boolean shipCollision(Point p) {
+		if (p == null) {	return false;	}
+		
+		if (((float)p.x >= this.getX()-0.5f) && ((float)p.x <= (this.getX() + this.getWidth() + 0.5f))
+			&& (float) p.y >= (this.getY()+0.5f))
+		{
+			while (this.gotHit() == true) {
+			}
+			return true;
+		}
+		
+		return false;
+	}
 
 }

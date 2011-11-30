@@ -106,20 +106,10 @@ public class Blockades {
 					}
 				}
 				for(int k = 0; k < ships.size(); k++) {
-					if ((ships.get(k) != null) && (blocks.get(i).checkCollisions(ships.get(k).getPosition()) == true)) {
-						j = i;
-						while ((j >= 0) && (j >= i-18)) {
-							boolean run = true;
-							while (run == true) {
-								if (blocks.get(j) != null) {
-									run = blocks.get(j).gotHit();
-								}
-								else {
-									run = false;
-								}
-							}
-							j -= 6;
-						}
+					if (ships.get(k) != null) {
+						blocks.get(i).shipCollision(ships.get(k).getPositionM());
+						blocks.get(i).shipCollision(ships.get(k).getPositionL());
+						blocks.get(i).shipCollision(ships.get(k).getPositionR());
 					}
 				}
 			}
