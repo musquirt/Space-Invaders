@@ -106,7 +106,6 @@ public class ScreenManager {
         If the specified display mode is null or not compatible
         with this device, or if the display mode cannot be
         changed on this system, the current display mode is used.
-        <p>
         The display uses a BufferStrategy with 2 buffers.
     */
     public void setFullScreen(DisplayMode displayMode) {
