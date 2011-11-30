@@ -26,17 +26,21 @@ public class Block extends Sprite {
 	public boolean gotHit() {
 		if (this.hits < 3) {
 			this.hits++;
-			this.update(1001);
+			this.update(110);
 			return true;
 		}
 		return false;
 	}
 
 	public boolean checkCollisions(Point p) {
-		if (p == null) {	return false;	}
+		if (p == null || this.hits >= 3) {
+			return false;
+		}
 		
-		if (((float)p.x >= this.getX()-0.5f) && ((float)p.x <= (this.getX() + this.getWidth() + 0.5f))
-			&& ((float) p.y >= this.getY()-0.5f) && ((float) p.y <= (this.getY() + this.getHeight() + 0.5f)))
+		if ((p.x >= (int)this.getX())
+				&& (p.x <= ((int)this.getX() + this.getWidth()))
+				&& (p.y <= (int)this.getY())
+				&& (p.y >= ((int)this.getY() - this.getHeight())))
 		{
 			return this.gotHit();
 		}

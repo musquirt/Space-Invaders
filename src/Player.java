@@ -5,8 +5,7 @@ import javax.swing.ImageIcon;
 /* The Player class extends the Sprite class */
 public class Player extends Sprite {
 	// high for debugging purposes
-	// .15 seems to be a good speed
-    private static final float Speed = .35f;
+    private static final float Speed = .25f;
 
     private int     floorY;
     private int     screenMaxY;

@@ -58,7 +58,7 @@ public class Bullet extends Sprite {
 	public Point getBulletLocation() {
 		Point bPoint = new Point();
 		bPoint.x = (int) (this.getX()+this.getWidth()/2);
-		bPoint.y = (int) (this.getY()+this.getHeight()/2);
+		bPoint.y = (int) (this.getY());
 		return bPoint;
 	}
 	

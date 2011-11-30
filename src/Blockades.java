@@ -47,10 +47,10 @@ public class Blockades {
 					}
 					else {
 						Animation ba = new Animation();
-						ba.addFrame(hit0, 1000);
-						ba.addFrame(hit1, 1000);
-						ba.addFrame(hit2, 1000);
-						ba.addFrame(hit3, 1000);
+						ba.addFrame(hit0, 100);
+						ba.addFrame(hit1, 100);
+						ba.addFrame(hit2, 100);
+						ba.addFrame(hit3, 100);
 						Block bl = new Block(ba);
 						bl.setXY((int) (i+1)*divides-b.getWidth()/2 + k*bl.getWidth(), (int) p.getY()-b.getHeight()-5 + j*bl.getHeight());
 						blocks.add(bl);
@@ -90,30 +90,43 @@ public class Blockades {
 		}
 	}
 	
+	public void checkPlayerCollisions(Player p, Block b) {
+		if (b.checkCollisions(p.getBulletLocation()) == true) {
+			p.BulletCollided();
+		}
+		return;
+	}
+	
+	public void checkMissileCollisions(List<Bullet> missiles, Block b) {
+		int j = 0;
+		while (j < missiles.size()) {
+			if (b.checkCollisions(missiles.get(j).getBulletLocation()) == true) {
+				missiles.remove(j);
+			} else {
+				j++;
+			}
+		}
+		return;
+	}
+	
+	public void checkEnemyCollisions(List<Enemy> ships, Block b) {
+		for(int k = 0; k < ships.size(); k++) {
+			if (ships.get(k) != null) {
+				b.shipCollision(ships.get(k).getPositionM());
+				b.shipCollision(ships.get(k).getPositionL());
+				b.shipCollision(ships.get(k).getPositionR());
+			}
+		}
+		return;
+	}
+	
 	public void checkCollisions(Player p, List<Bullet> missiles, List<Enemy> ships) {
 		for(int i = 0; i < blocks.size(); i++) {
 			if (blocks.get(i) != null) {
-				if (blocks.get(i).checkCollisions(p.getBulletLocation()) == true) {
-					p.BulletCollided();
-				}
-				int j = 0;
-				while (j < missiles.size()) {
-					if (blocks.get(i).checkCollisions(missiles.get(j).getBulletLocation()) == true) {
-						missiles.remove(j);
-					}
-					else {
-						j++;
-					}
-				}
-				for(int k = 0; k < ships.size(); k++) {
-					if (ships.get(k) != null) {
-						blocks.get(i).shipCollision(ships.get(k).getPositionM());
-						blocks.get(i).shipCollision(ships.get(k).getPositionL());
-						blocks.get(i).shipCollision(ships.get(k).getPositionR());
-					}
-				}
+				checkPlayerCollisions(p, blocks.get(i));
+				checkMissileCollisions(missiles, blocks.get(i));
+				checkEnemyCollisions(ships, blocks.get(i));
 			}
-			
 		}
 	}
 
